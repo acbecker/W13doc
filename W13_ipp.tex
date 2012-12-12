@@ -287,7 +287,7 @@ done before.
 \subsection{New Developments}
 The reference catalog needs to have time--dependent entries.
 
-\subsection{Degrees of Freedom}
+\subsection{Tuning Parameters}
 
 \subsection{Metrics and Testing}
 
@@ -303,7 +303,7 @@ The reference catalog needs to have time--dependent entries.
 It would be helpful if we tested some fields that were at the edge of
 the inner region of a tract.
 \subsection{New Developments}
-\subsection{Degrees of Freedom}
+\subsection{Tuning Parameters}
 
 \subsection{Metrics and Testing}
 \subsection{Tools}
@@ -321,12 +321,23 @@ Gaussian will have a FWHM of {\bf twice?} the central Gaussian, and
 contribute {\bf $10\%$} of the total flux.
 
 \subsection{Input/Outputs}
-\subsection{Issues}
-\subsection{New Developments}
-We do not have color-dependent Psfs.  
 
-\subsection{Degrees of Freedom}
-We will need to test the following configs:
+\subsection{Issues}
+We do not have color-dependent Psfs.  This will be minimized by
+analysis of $i$--band data, and explored in analysis of $g$--band
+data.
+
+The {\tt meas\_mosaic}, which is a port of HSC's \"{u}ber cal, is
+necessary to correct known deficiencies in LSST's {\tt meas\_astrom}
+package.  This has proven necessary for creation of non--smeared
+coadded images, reducing the RMS of the astrometric fit by a factor of
+two.  This is leading to an additional systematic component equivalent
+to {\bf XXX} in coadded images, and will vary spatially.
+
+\subsection{New Developments}
+
+\subsection{Tuning Parameters}
+We will need to test the following Psf--matching configs:
 \begin{itemize}
 \item Psf size (set in processCcd)
 \item Psf grid 
@@ -351,16 +362,20 @@ background level of 0.  Currently using a Chebyshev with order 3.
 We need to make sure all necessary metadata ends up in the database.
 This includes zeropoints, sky background, Psf FWHM.
 
-
-
 \subsection{Input/Outputs}
+
 \subsection{BackgroundMatchingTask} 
+
 \subsection{Issues}
+
 \subsection{New Developments}
 Spreading of Mask bits.  How do we define the selection criteria, and
 select, input and reference images from the database.
-\subsection{Degrees of Freedom}
+
+\subsection{Tuning Parameters}
+
 \subsection{Metrics and Testing}
+
 \subsection{Tools}
 
 %%%%%%%
@@ -380,12 +395,22 @@ and measurement on the template image, yielding at a minimum the {\tt
   Psf} and {\tt Source} products.
 
 \subsection{Input/Outputs}
+
 \subsection{Calibrate/Detect/Measure subTasks}
-\subsection{Isseus}
+
+\subsection{Issues}
+
 \subsection{New Developments}
-\subsection{Degrees of Freedom}
+Create zeropoint, Psf, and Wcs of coadd for QA, but do not overwrite
+extant ones.
+
+\subsection{Tuning Parameters}
+
 \subsection{Metrics and Testing}
+
 \subsection{Tools}
+Means to compare fitted zeropoint, Psf, and Wcs of coadd with the
+design specs.
 
 %%%%%%%
 
@@ -426,14 +451,19 @@ decide if a basis is necessary or not.
 
 
 \subsection{Input/Outputs}
+
 \subsection{Calibrate/Detect/Measure subTasks}
+
 \subsection{Issues}
 We do not have color-dependent Psf-matching kernels.  
+
 \subsection{New Developments}
 We need a piece of code to query the database, find the overlapping
-tracts, and coadd them into a template.  Do we use RHL's option to
-pre--convolve.
-\subsection{Degrees of Freedom}
+tracts, and coadd them into a template.  
+
+Do we use RHL's option to pre--convolve.
+
+\subsection{Tuning Parameters}
 The default for Winter2013 is to use Chebyshev polynomials for spatial
 interpolation.  A stretch goal will be to implement Gaussian processes
 (kriging).
@@ -449,7 +479,7 @@ interpolation.  A stretch goal will be to implement Gaussian processes
 \subsection{Calibrate/Detect/Measure subTasks}
 \subsection{Issues}
 \subsection{New Developments}
-\subsection{Degrees of Freedom}
+\subsection{Tuning Parameters}
 \subsection{Metrics and Testing}
 \subsection{Tools}
 
