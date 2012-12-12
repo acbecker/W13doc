@@ -5,6 +5,8 @@
 \usepackage{titletoc}
 \usepackage{color}
 
+\usepackage[toc,page]{appendix}
+
 % HOW TO SET UP AN 8.5 x 11:
 % http://www.pages.drexel.edu/~pyo22/students/latexRelated/latexTutorial.html
 \topmargin -1.5cm        % read Lamport p.163
@@ -43,7 +45,7 @@
 %\titlecontents{subsection}[4.8em]{}{\contentslabel{2.4em}}{\hspace*{-2.8m}}{...}
 %\titlecontents{subsubsection}[6.0em]{}{\contentslabel{2.4em}}{\hspace*{-2.8m}}{}
 
-\author{Andrew Becker}
+\author{Andrew Becker, Simon Krughoff, Andy Connolly}
 \title{Roadmap for Winter2013 Production}
 \date{\today}
 
@@ -89,129 +91,10 @@ Configs for each Task.
 \clearpage 
 \section{ImSim Input Data} 
 
-%%%%%%%
-
-\clearpage 
-\section{ProcessCcdTask} 
-
-\subsection{IsrTask}
-\subsection{SnapCombineTask}
-\subsection{Calibrate/Detect/Measure subTasks}
-\subsection{AstrometryTask} 
-
-%%%%%%%
-
-\clearpage 
-\section{MakeSkyMapTask} 
-
-%%%%%%%
-
-\clearpage 
-\section{MakeCoaddTempExpTask} 
-
-%%%%%%%
-
-\clearpage 
-\section{AssembleCoaddTask} 
-
-%%%%%%%
-
-\clearpage 
-\section{ProcessCoaddTask} 
-\subsection{Calibrate/Detect/Measure subTasks}
-
-%%%%%%%
-
-\clearpage 
-\section{ImageDifferenceTask} 
-\subsection{Calibrate/Detect/Measure subTasks}
-
-%%%%%%%
-
-\clearpage 
-\section{Database Ingestion} 
-
-%%%%%%%
-
-\clearpage 
-\section{Processing time} 
-
-%%%%%%%
-%%%%%%%
-%%%%%%%
-
-\clearpage 
-\appendix
-\section{Task Command lines and Configs}
-
-\subsection{ProcessCcdTask}
-
-\subsection{MakeSkyMapTask}
-\begin{python}
-makeSkyMap.py
-
---config
-skyMap.name='dodeca'
-skyMap.active.withTractsOnPoles=False
-skyMap.active.projection='STG'
-skyMap.active.patchInnerDimensions=4000,4000
-skyMap.active.pixelScale=0.2
-skyMap.active.patchBorder=250
-skyMap.active.tractOverlap=3.5
-\end{python}
-
-\subsection{MakeCoaddTempExpTask} 
-
-\subsection{AssembleCoaddTask} 
-
-\subsection{ProcessCoaddTask} 
-
-\subsection{ImageDifferenceTask} 
-
-\subsection{Database Ingestion} 
-\begin{python}
-$DATAREL_DIR/bin/ingest/ingestSources.py [lsstSim]
-    ~becker/Winter2013/diffim_v0/tmpsdssdiff
-    --host=lsst10.ncsa.illinois.edu 
-    --database={yourDatabaseName} 
-    --table={yourTableName}
-    --dataset-type=goodSeeingDiff_src
-    --id visit=873161311 raft=3,0 sensor=0,2
-\end{python}
-%$
-
-%%%%%%%
-%%%%%%%
-%%%%%%%
-
-\end{document}
-
-% Move the stuff below to above
-
-\section{Input Data}
-\subsection{What data sets we will be processing} \becker \ajc
-
-\subsubsection{LSST ImSim}
 The sets of simulated images produced for Summer 2012 (which will be
 the inputs for Winter 2013 late production) are described at \\{\tt
-  http://dev.lsstcorp.org/trac/wiki/ImSim/Summer2012Plan}.
-
-At a minimum, we will analyze quadrants of full focal plane ImSims,
-which will test the degradation of the image quality and throughput
-from the center to a corner raft.  If compute resources allow, we will
-analyze full focal plane images.  One complication to the quadrant
-strategy is that due to rotational and pointing dithering, it will be
-complicated to fully identify a subset of images that can be said to
-sample the focal plane at any given radius, and thus this strategy may
-be undesirable.
-
-\subsubsection{Stripe 82}
-No S82 data reduction is planned, except as a stretch goal.
-
-%%%%%%%
-
-\subsection{How much data we will reduce} \becker \ajc
-\subsubsection{Spec}
+  http://dev.lsstcorp.org/trac/wiki/ImSim/Summer2012Plan}.  Processing
+of SDSS Stripe82 data is a stretch goal for Winter 2013 production.
 
 We wish to explore the capabilities of the image subtraction software
 across the focal plane, and as a function of wavelength (both of the
@@ -253,35 +136,17 @@ of the Psf.  This will inform future specifications for
 color--dependent Psf--modeling and Psf--matching kernels.  There are
 {\bf XX} $g$--band images of the central field.
 
-\subsubsection{Stretch Goal}
-Stretch goals include, in order of priority: operating on S82 data;
-operating on ImSim data in other passbands.
-
-%%%%%%%
-
-\subsection{Where do the data need to reside} \simon
-
 Data will be prepared at various locations and stored at JHU with
 images brought over as needed.  We can use standard grid copy tools
 (gridftp, bbcp).  Before large runs start, the data will need to
-staged at the compute center.
+staged at the compute center.  The estimated time of transfer is
+(We'll need to benchmark this) demonstrated rate of {\bf XXX b/s} and
+ImSim data volume of {\bf XXX GB} results in transfer time of {\bf
+  XXX} days.  The registry generation time is ~10min per visit.  We
+will need to solve the problem of how to point to the correct flat in
+the registry given a rotator angle for the science image.  This has
+not been done before.
 
-\subsubsection{Data transfer overhead} 
-We'll need to benchmark this.  Estimated time of transfer:
-demonstrated rate of {\bf XXX b/s} and ImSim data volume of {\bf XXX
-  GB} results in transfer time of {\bf XXX} days.
-
-\subsubsection{How to generate the registries} 
-The registry generation time is ~10min per visit.  We will need to
-solve the problem of how to point to the correct flat in the registry
-given a rotator angle for the science image.  This has not been done
-before.
-
-%%%%%%%
-
-\subsection{How do we generate the ImSim calibration products} \simon
-
-\subsubsection{Outline of calibration steps}
 We will be applying overscan correction, bias correction and flat
 fielding to the ImSim data.  The dark current in the models is below
 the level we need to worry about.  The flats will be normalized to a
@@ -291,12 +156,10 @@ Informed by John P. we should have flats in increments of 5 deg from 0
 to 90.  Amps will be assembled in readout order such that the serial
 transfer direction is along the x-axis of the image.
 
-\subsubsection{Raw calibration inputs}
 Master flats, darks, and biases will be produced by coadding 10
 examples (each including 2 snaps).  We will not be simulating any time
 dependent effects in the calibration products.
 
-\subsubsection{Rotation dependent flats}
 The spider introduces asymmetric vignetting.  This should be taken out
 using flat fields produced with a variety of rotator angles.  Where
 the effect is strongest, the angular dependence introduces scatter of
@@ -304,25 +167,409 @@ $\sim~5$\%.  Using flats generated at increments of 5 deg from 0 - 90
 deg (18 master flats) should bring this below the nominal 1\% error
 (although any remaining error will be systematic).
 
-\subsubsection{Orientation of the eimage relative to the assembled ImSim images}
-This should be a non-issue.  John will change the simulator to produce
-the chips in readout order instead of camera coordinates.
+John will change the simulator to produce the chips in readout order
+instead of camera coordinates so that the orientation of the eimage is
+syncproniced with the assembled calexps.
 
-\subsubsection{Calibration production}
-This will be non-trivial.  We'll need to make registries for
-$\sim~200$ visits and process them at $\sim~$minutes per chip.  The
-new calibration product tasks will make this much easier.  Simon is
-working on said tasks.  As of Dec 11, 2 days worth of work before it
-can be submitted for review.
+\subsection{Issues}
 
-%%%%%%
+The calibration production will be non-trivial.  We'll need to make
+registries for $\sim~200$ visits and process them at $\sim~$minutes
+per chip.  The new calibration product tasks will make this much
+easier.  Simon is working on said tasks.  As of Dec 11, 2 days worth
+of work before it can be submitted for review.
 
-\clearpage \section{ProcessCcdTask} 
+%%%%%%%
+
+\clearpage 
+\section{ProcessCcdTask} 
+
+\subsection{Input/Outputs}
+
+Outputs will be:
+\begin{itemize}
+\item Metadata for ingest
+\item Src for ingest
+\item Calexp for input to {\tt ip\_diffim}
+\item Background to add to Calexp for {\tt ip\_diffim}
+\item Psf for Psf matching
+\end{itemize}
+
+
+\subsection{IsrTask}
+\subsection{SnapCombineTask}
+
+The baseline LSST observing plans defines a field ``visit'' as the
+acquisition of two back--to--back images (called Snaps) and their
+combination into a single visit Exposure.  The reason for this is to
+reject cosmic rays that are fall outside the detection thresholds of
+single--image CR rejection routines.  By subtracting the two snaps
+(snap2 - snap1), CRs may be detected with either positive or negative
+polarity, indicating a CR in the second or first snap, respectively.
+These pixels will be masked, and the two snaps coadded into the final
+visit Exposure.
+
+There are two options to creating the image difference on which CRs
+will be detected.  The first is to take a straight difference of the
+two images.  This should suffice under the assumption of a fully
+realized Psf and stable atmosphere, and of sufficient precision in the
+telescope tracking over the 32 second visit window.  The second option
+is to use a Psf--matching kernel to register both the shapes and/or
+positions of the stars if any of the assumptions above fail.  A
+disadvantage of this method is that, due to the convolution inherent
+in Psf--matching, the shapes of the CRs will be distorted, potentially
+making them more difficult to detect.
+
+The outstanding issue driving the decision to use Psf--matching or not
+is the amount of image motion between Snaps in the data.  The
+amplitude of these shifts in the Winter2013 test data, determined
+through manual source detection and matching, is {\bf XX}$\arcsec$.
+This amplitude of shifts suggests that image registration techniques
+will be necessary for Winter2013 processing.  It remains an
+outstanding issue (but beyond the scope of this planning document) if
+these shifts reflect a realistic amount of image motion for an
+LSST--like system.
+
+The detection and masking of CRs will proceed as follows:
+
+How do we make sure we only mask out undetected cosmic rays and not
+differences in stars.  
+
+The combined Exposure will have an exposure time equivalent to the sum
+of the two input Snaps (i.e. this will {\it not} be an average image).
+The FITS keywords that need to be modified in this process include:
+{\bf XXX}.  The FITS keywords that will {\it not} be modified in this
+process, but that reflect metadata that are different between the two
+Snaps, include : {\bf WCS}.  These features will be copied from the
+first snap of the visit pair.
+
+\subsection{Calibrate/Detect/Measure subTasks}
+The important parameters to consider are:
+\begin{itemize} 
+\item background grid size -- There are several of these in the config
+  so we should understand what each one does
+\item aperture size for aperture corrections -- the default is likely
+  too small
+\item deblending radius
+\item galaxy shape parameters
+\end{itemize}
+
+\subsection{AstrometryTask} 
+
+We already have a stars only reference catalog for the entire area
+covered by the W13 ImSim area.  We will produce the galaxy catalog to
+go along with this.  The reference catalog will contain the following
+columns:
+
+\begin{itemize}
+\item id -- unique integer id of the object traceable back to the base catalogs
+\item RA position of the object centroid in degrees
+\item DEC position of the object centroid in degrees
+\item {u,g,r,i,z,y} observed LSST magnitudes (in the mean sense for variable objects)
+\item object class id (main sequence star, wd, bhb, etc.)
+\item variability class (Agn, m-dwarf flare, RRly, etc. 0 if not variable)
+\item galaxy position angle in degrees (do we measure these, or should we give these in both components)
+\item galaxy semi-major axis 
+\item galaxy semi-minor axis
+\item bulge to total ratio
+\item Agn to total ratio
+\item disk to total ratio
+\item Agn variability parameters (tau and SF\_{u,g,r,i,z,y})
+\item A\_v reddening 
+\end{itemize}
+
+We will also need the reference catalog to be a function of time for
+the time variable objects (brightness, position).  This has not been
+done before.
+
+\subsection{Issues}
+
+\subsection{New Developments}
+The reference catalog needs to have time--dependent entries.
+
+\subsection{Degrees of Freedom}
+
+\subsection{Metrics and Testing}
+
+\subsection{Tools}
+
+%%%%%%%
+
+\clearpage 
+\section{MakeSkyMapTask} 
+
+\subsection{Input/Outputs}
+\subsection{Issues}
+It would be helpful if we tested some fields that were at the edge of
+the inner region of a tract.
+\subsection{New Developments}
+\subsection{Degrees of Freedom}
+
+\subsection{Metrics and Testing}
+\subsection{Tools}
+
+%%%%%%%
+
+\clearpage 
+\section{MakeCoaddTempExpTask} 
+
+The input images will be Psf--matched to a designed template Psf
+before coaddition.  This Psf will be a circular double Gaussian
+function, with the smaller of the Gaussians having the FWHM of the
+{\bf XX}$^{th}$ percentile of the input images' FWHM.  The outer
+Gaussian will have a FWHM of {\bf twice?} the central Gaussian, and
+contribute {\bf $10\%$} of the total flux.
+
+\subsection{Input/Outputs}
+\subsection{Issues}
+\subsection{New Developments}
+We do not have color-dependent Psfs.  
+
+\subsection{Degrees of Freedom}
+We will need to test the following configs:
+\begin{itemize}
+\item Psf size (set in processCcd)
+\item Psf grid 
+\item Psf model functions
+\item kernel size
+\end{itemize}
+
+\subsection{Metrics and Testing}
+\subsection{Tools}
+
+%%%%%%%
+
+\clearpage 
+\section{AssembleCoaddTask} 
+
+The coadded template image will be constructed using background
+matching, as opposed to background subtraction.  The image subtraction
+code will also be run using its own internal background--matching (of
+template to science image) model, yielding a difference image with a
+background level of 0.  Currently using a Chebyshev with order 3.
+
+We need to make sure all necessary metadata ends up in the database.
+This includes zeropoints, sky background, Psf FWHM.
+
+
+
+\subsection{Input/Outputs}
+\subsection{BackgroundMatchingTask} 
+\subsection{Issues}
+\subsection{New Developments}
+Spreading of Mask bits.  How do we define the selection criteria, and
+select, input and reference images from the database.
+\subsection{Degrees of Freedom}
+\subsection{Metrics and Testing}
+\subsection{Tools}
+
+%%%%%%%
+
+\clearpage 
+\section{ProcessCoaddTask} 
+
+To optimize the basis shapes matching the template image to a science
+image, we require the Psf of the template image.  This level of
+template processing also allows us to undertake QA to determine if the
+realized shape of the Psf matches the specifications it was designed
+to, if the astrometry of the template matches the SkyMap it was
+designed to, and if there is any brightness dependence of the Psf by
+looking at the measured brightness of reference catalog stars in the
+template.  This essentially requires that we run calibrate, detection
+and measurement on the template image, yielding at a minimum the {\tt
+  Psf} and {\tt Source} products.
+
+\subsection{Input/Outputs}
+\subsection{Calibrate/Detect/Measure subTasks}
+\subsection{Isseus}
+\subsection{New Developments}
+\subsection{Degrees of Freedom}
+\subsection{Metrics and Testing}
+\subsection{Tools}
+
+%%%%%%%
+
+\clearpage 
+\section{ImageDifferenceTask} 
+There are two classes of options for the selection of objects used to
+model the Psf--matching Kernel.  The first involves use of a
+starSelectorRegistry.  This may be a ``second moment'' star selector
+to ensure that we only receive stars in the list, or a catalog--based
+selector that queries a reference catalog for sources, and may be used
+as a place--holder for a future specialized task that selects objects
+that are non--variable and have negligible proper motion.  The second
+option is to use native {\tt ip\_diffim} code that runs a very basic
+detection algorithm and then sorts by integrated flux.  This code was
+written long before starSelectorRegistries were implemented, and may
+arguably be deprecated.  In both cases, objects with corresponding
+Mask bits () set are ignored.
+
+The number of sources that are detected in any given image determine
+the complexity of the model that may be used to build a Psf--matching
+kernel.  We need to decide if we are going to reduce the degree of the
+spatial model based on the number of detected sources or not; this
+means that the {\tt Config} will describe the heuristics used to
+determine the spatial order of the models, and not the spatial order
+of the models themselves.  This information needs to be persisted as
+metadata if we choose to go this route.  We also need to establish the
+minimum signal--to--noise of an object to be used in Kernel fitting.
+
+By default, we will be using sum--of--Gaussian bases for Winter2013,
+given the outstanding issue of how to build spatial models with delta
+function bases.  The size of these Gaussians may be derived from the
+FWHM of the template and science images using a heuristic; this
+heuristic needs to be derived and trained.  The overall number of
+bases becomes inflated by multiplying each basis with a set of
+Hermite--polynomials.  The number of bases needed will be determined
+using the Bayesian Information Criterion as a principled means to
+decide if a basis is necessary or not.
+
+
+\subsection{Input/Outputs}
+\subsection{Calibrate/Detect/Measure subTasks}
+\subsection{Issues}
+We do not have color-dependent Psf-matching kernels.  
+\subsection{New Developments}
+We need a piece of code to query the database, find the overlapping
+tracts, and coadd them into a template.  Do we use RHL's option to
+pre--convolve.
+\subsection{Degrees of Freedom}
+The default for Winter2013 is to use Chebyshev polynomials for spatial
+interpolation.  A stretch goal will be to implement Gaussian processes
+(kriging).
+\subsection{Metrics and Testing}
+\subsection{Tools}
+
+%%%%%%%
+
+\clearpage 
+\section{Database Ingestion} 
+
+\subsection{Input/Outputs}
+\subsection{Calibrate/Detect/Measure subTasks}
+\subsection{Issues}
+\subsection{New Developments}
+\subsection{Degrees of Freedom}
+\subsection{Metrics and Testing}
+\subsection{Tools}
+
+%%%%%%%
+
+\clearpage 
+\section{Estimated Processing Times} 
+
+\begin{table*}[h]
+\small
+\begin{center}
+\caption{\label{tab-pars} Estimated Processing Times}
+\begin{tabular}{ccccc}
+\hline \hline
+Task                 & Time/Unit  & Units        & Number of Units & Total Time\\
+\hline
+Build Registry       & 10 minutes & Visit        & XXX             &           \\ 
+ProcessCccdTask      &            & Ccd          & XXX             &           \\ % Sum of all 4 subtasks below
+~~~IsrTask           & 1 minute   & Ccd          & XXX             &           \\
+~~~SnapCombineTask   &            & Ccd          & XXX             &           \\
+~~~Calexp CDM        &            & Ccd          & XXX             &           \\
+~~~AstrometryTask    &            & Ccd          & XXX             &           \\
+MakeSkyMapTask       & 10 seconds & Skymap       & 1               &           \\
+MakeCoaddTempExpTask &            & Visit-Patch  & XXX             &           \\
+AssembleCoaddTask    &            & Patch        & XXX             &           \\   
+ProcessCoaddTask     &            & Patch        & XXX             &           \\
+ImageDifferenceTask  &            & Ccd          & XXX             &           \\
+Database Ingest      & 10$^{X}$/s & Rows         & XXX             &           \\
+\hline
+\hline
+\end{tabular}
+\end{center}
+\end{table*}
+
+%%%%%%%
+%%%%%%%
+%%%%%%%
+
+\clearpage 
+\begin{appendices}
+
+\section{Flow Chart} \ajc
+
+\section{Task Command lines and Configs}
+
+\subsection{ProcessCcdTask}
 \begin{python}
 processCcd.py
-
-...
 \end{python}
+
+
+\subsection{MakeSkyMapTask}
+\begin{python}
+makeSkyMap.py
+
+--config
+skyMap.name='dodeca'
+skyMap.active.withTractsOnPoles=False
+skyMap.active.projection='STG'
+skyMap.active.patchInnerDimensions=4000,4000
+skyMap.active.pixelScale=0.2
+skyMap.active.patchBorder=250
+skyMap.active.tractOverlap=3.5
+\end{python}
+
+\subsection{MakeCoaddTempExpTask} 
+\begin{python}
+makeCoaddTempExp.py
+\end{python}
+
+\subsection{AssembleCoaddTask} 
+\begin{python}
+assembleCoadd.py
+\end{python}
+
+\subsection{ProcessCoaddTask} 
+\begin{python}
+processCoadd.py
+\end{python}
+
+\subsection{ImageDifferenceTask} 
+\begin{python}
+imageDifference.py
+\end{python}
+
+\subsection{Database Ingestion} 
+\begin{python}
+$DATAREL_DIR/bin/ingest/ingestSources.py [lsstSim]
+    ~becker/Winter2013/diffim_v0/tmpsdssdiff
+    --host=lsst10.ncsa.illinois.edu 
+    --database={yourDatabaseName} 
+    --table={yourTableName}
+    --dataset-type=goodSeeingDiff_src
+    --id visit=873161311 raft=3,0 sensor=0,2
+\end{python}
+%$
+\end{appendices}
+%%%%%%%
+%%%%%%%
+%%%%%%%
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% Move the stuff below to above
 
 %%%%%%%
 \subsection{IsrTask (for ImSim)} \simon
@@ -355,139 +602,8 @@ doIsr=True
 isr.doDark=False
 \end{python}
 
-%%%%%%%
-\subsection{SnapCombineTask} \becker
-
-The baseline LSST observing plans defines a field ``visit'' as the
-acquisition of two back--to--back images (called Snaps) and their
-combination into a single visit Exposure.  The reason for this is to
-reject cosmic rays that are fall outside the detection thresholds of
-single--image CR rejection routines.  By subtracting the two snaps
-(snap2 - snap1), CRs may be detected with either positive or negative
-polarity, indicating a CR in the second or first snap, respectively.
-These pixels will be masked, and the two snaps coadded into the final
-visit Exposure.
-
-There are two options to creating the image difference on which CRs
-will be detected.  The first is to take a straight difference of the
-two images.  This should suffice under the assumption of a fully
-realized Psf and stable atmosphere, and of sufficient precision in the
-telescope tracking over the 32 second visit window.  The second option
-is to use a Psf--matching kernel to register both the shapes and/or
-positions of the stars if any of the assumptions above fail.  A
-disadvantage of this method is that, due to the convolution inherent
-in Psf--matching, the shapes of the CRs will be distorted, potentially
-making them more difficult to detect.
-
-\subsubsection{Image motion}
-The outstanding issue driving the decision to use Psf--matching or not
-is the amount of image motion between Snaps in the data.  The
-amplitude of these shifts in the Winter2013 test data, determined
-through manual source detection and matching, is {\bf XX}$\arcsec$.
-This amplitude of shifts suggests that image registration techniques
-will be necessary for Winter2013 processing.  It remains an
-outstanding issue (but beyond the scope of this planning document) if
-these shifts reflect a realistic amount of image motion for an
-LSST--like system.
-
-\subsubsection{Detection and masking of CRs}
-The detection and masking of CRs will proceed as follows:
-
-\subsubsection{How to avoid masking the cores of stars}
-How do we make sure we only mask out undetected cosmic rays and not
-differences in stars.  
-
-\subsubsection{How to coadd the Snaps}
-The combined Exposure will have an exposure time equivalent to the sum
-of the two input Snaps (i.e. this will {\it not} be an average image).
-The FITS keywords that need to be modified in this process include:
-{\bf XXX}.  The FITS keywords that will {\it not} be modified in this
-process, but that reflect metadata that are different between the two
-Snaps, include : {\bf WCS}.  These features will be copied from the
-first snap of the visit pair.
-
-\subsubsection{What is the default Config for SnapCombineTask}
-\begin{python}
---config
-doSnapCombine=True
-snapCombine.doSimpleAverage=True  # TBD
-\end{python}
-
-%%%%%%%
-\subsection{Calibrate/Detect/Measure Tasks} \simon
-What components can be turned off what cant be turned off (model
-fitting, aperture corrections, photometric calibration, deblend,
-zeropoint fit)
-
-This is done by an iterative process of detection and background
-estimation.  The important parameters to consider are:
-\begin{itemize} 
-\item background grid size -- There are several of these in the config
-  so we should understand what each one does
-\item aperture size for aperture corrections -- the default is likely
-  too small
-\item deblending radius
-\item galaxy shape parameters
-\end{itemize}
-
-\subsubsection{What outputs do we generate with CDM}
-\begin{itemize}
-\item Metadata for ingest
-\item Src for ingest
-\item Calexp for input to {\tt ip\_diffim}
-\item Background to add to Calexp for {\tt ip\_diffim}
-\item Psf for Psf matching
-\end{itemize}
-
-\subsubsection{What metadata do we need to persist}
-TBD
-
-\subsubsection{What is the processing time for CDM per Ccd}
-$\sim~30$ sec per Ccd.
-
-\subsubsection{What is the default Config for CDM}
-We should look carefully at the config for this stage as I think we'll
-need to converge on several parameters.
-
-\begin{python}
---config
-calibrate.doPsf=True
-calibrate.doPhotoCal=True
-calibrate.doComputeApCorr=True
-calibrate.measurement.doApplyApCorr=True
-measurement.doApplyApCorr=True
-doMeasurement=True
-\end{python}
-
-%%%%%%%
-\subsection{AstrometryTask} \becker \simon
 
 \subsubsection{Which reference catalog will be used for the astrometry}
-We already have a stars only reference catalog for the entire area
-covered by the W13 ImSim area.  We will produce the galaxy catalog to
-go along with this.  The reference catalog will contain the following
-columns:
-
-\begin{itemize}
-\item id -- unique integer id of the object traceable back to the base catalogs
-\item RA position of the object centroid in degrees
-\item DEC position of the object centroid in degrees
-\item {u,g,r,i,z,y} observed LSST magnitudes (in the mean sense for variable objects)
-\item object class id (main sequence star, wd, bhb, etc.)
-\item variability class (Agn, m-dwarf flare, RRly, etc. 0 if not variable)
-\item galaxy position angle in degrees (do we measure these, or should we give these in both components)
-\item galaxy semi-major axis 
-\item galaxy semi-minor axis
-\item bulge to total ratio
-\item Agn to total ratio
-\item disk to total ratio
-\item Agn variability parameters (tau and SF\_{u,g,r,i,z,y})
-\item A\_v reddening 
-\end{itemize}
-
-We will also need the reference catalog to be a function of time for
-the time variable objects (brightness, position).  This has not been
-done before.
 
 \subsubsection{Who will define it and create it from the sims}
 This has been done based on the W13 surveys proposed on:
@@ -513,277 +629,6 @@ that was successfully fitted to the data.
 ...
 \end{python}
 
-%%%%%%
-\clearpage \section{MakeSkyMapTask} \russ
-%%%%%%%
-\subsection{What sky tiles are we using and what projection and pixel resolution}
-It would be helpful if we tested some fields that were at the edge of
-the inner region of a tract.
-
-%%%%%%%
-\subsection{What is the default Config for MakeSkyMapTask}
-
-%%%%%%
-\clearpage \section{MakeCoaddTempExpTask} \simon
-%%%%%%%
-\subsection{What are the inputs required for coaddTempExp generation}
-
-We will need to have a Skymap, {\tt calexps} and {\tt backgrounds}.
-
-\subsection{Is the butler ready for ImSim input}
-TBD
-
-\subsection{Psf matching}
-The input images will be Psf--matched to a designed template Psf
-before coaddition.  This Psf will be a circular double Gaussian
-function, with the smaller of the Gaussians having the FWHM of the
-{\bf XX}$^{th}$ percentile of the input images' FWHM.  The outer
-Gaussian will have a FWHM of {\bf twice?} the central Gaussian, and
-contribute {\bf $10\%$} of the total flux.
-
-We will need to test the following configs:
-\begin{itemize}
-\item Psf size (set in processCcd)
-\item Psf grid 
-\item Psf model functions
-\item kernel size
-\end{itemize}
-
-\subsection{What is the anticipated effect of differential chromatic refraction}
-We do not have color-dependent Psfs.  Both for $i$--band and $g$--band.
-
-\subsection{What metadata do we need to persist}
-The {\tt coaddTempExp} product.
-
-\subsection{What is the processing time for MakeCoaddTempExpTask per Ccd}
-
-\subsection{What is the default Config for MakeCoaddTempExpTask}
-\begin{python}
-makeCoaddTempExp.py
-
---config
-coaddName=goodSeeing
-select.maxFwhm=3 
-select.quality=2 
-doOverwrite=False
-\end{python}
-
-%%%%%%
-\clearpage \section{AssembleCoaddTask to yield a Image Differencing template} \yusra \simon \becker
-%%%%%%%
-\subsection{Will we background match or subtract}
-The coadded template image will be constructed using background
-matching, as opposed to background subtraction.  The image subtraction
-code will also be run using its own internal background--matching (of
-template to science image) model, yielding a difference image with a
-background level of 0.
-
-\subsection{What function will be used for background matching and what order}
-Currently Chebyshev with order 3.
-
-\subsection{How do we define the selection criteria for the input/reference images for the templates}
-We need to make sure all necessary metadata ends up in the database.
-This includes zeropoints, sky background, Psf FWHM.
-
-\subsection{Spreading of Mask bits}
-afwMath::convolve
-
-\subsection{What metadata do we need to persist}
-The {\tt coadd} product.
-
-\subsection{What is the processing time for AssembleCoaddTask}
-For SDSS this was $\sim~2$ min per patch, which were approximately LSST--sized.
-
-\subsection{What is the default Config for AssembleCoaddTask}
-\begin{python}
-assembleCoadd.py
-
---config
-coaddName=goodSeeing
-desiredFwhm=1.7                       
-psfMatch.kernel.active.kernelSize=13  
-matchBackgrounds.usePolynomial=True 
-matchBackgrounds.binSize=128 
-matchBackgrounds.order=3 
-subregionSize=(2500, 2500)
-sigmaClip=10
-maxMatchResidualRatio=1.105
-autoReference=False
-select.maxFwhm=2.5
-select.quality=2
-\end{python}
-
-%%%%%%
-\clearpage \section{Calibrate/Detect/Measure on Template} \simon \becker
-
-To optimize the basis shapes matching the template image to a science
-image, we require the Psf of the template image.  This level of
-template processing also allows us to undertake QA to determine if the
-realized shape of the Psf matches the specifications it was designed
-to, if the astrometry of the template matches the SkyMap it was
-designed to, and if there is any brightness dependence of the Psf by
-looking at the measured brightness of reference catalog stars in the
-template.  This essentially requires that we run calibrate, detection
-and measurement on the template image, yielding at a minimum the {\tt
-  Psf} and {\tt Source} products.
-
-%%%%%%%
-\subsection{What is the default Config for Detect/Measure on Template}
-\begin{python}
-processCoadd.py
-
---config
-coaddName=goodSeeing 
-detection.thresholdType=pixel_stdev
-calibrate.initialPsf.model=DoubleGaussian 
-calibrate.initialPsf.fwhm=1.7 
-doDeblend=True
-calibrate.astrometry.forceKnownWcs=True 
-calibrate.astrometry.solver.calculateSip=False
-calibrate.detection.reEstimateBackground=True
-\end{python}
-
-\subsection{Ingest of Coadd Data Products}
-TBD
-
-\subsection{PipeQA on Coadds}
-TBD
-
-\clearpage \section{ImageDifferenceTask} \becker
-
-\begin{python}
-imageDifference.py
-...
-\end{python}
 
 
-%%%%%%%
-\subsection{How do we select stars/galaxies for the kernel generation}
-There are two classes of options for the selection of objects used to
-model the Psf--matching Kernel.  The first involves use of a
-starSelectorRegistry.  This may be a ``second moment'' star selector
-to ensure that we only receive stars in the list, or a catalog--based
-selector that queries a reference catalog for sources, and may be used
-as a place--holder for a future specialized task that selects objects
-that are non--variable and have negligible proper motion.  The second
-option is to use native {\tt ip\_diffim} code that runs a very basic
-detection algorithm and then sorts by integrated flux.  This code was
-written long before starSelectorRegistries were implemented, and may
-arguably be deprecated.  In both cases, objects with corresponding
-Mask bits () set are ignored.
 
-The number of sources that are detected in any given image determine
-the complexity of the model that may be used to build a Psf--matching
-kernel.  We need to decide if we are going to reduce the degree of the
-spatial model based on the number of detected sources or not; this
-means that the {\tt Config} will describe the heuristics used to
-determine the spatial order of the models, and not the spatial order
-of the models themselves.  This information needs to be persisted as
-metadata if we choose to go this route.  We also need to establish the
-minimum signal--to--noise of an object to be used in Kernel fitting.
-
-\subsection{What basis functions will we use (Gaussian/delta functions)}
-By default, we will be using sum--of--Gaussian bases for Winter2013,
-given the outstanding issue of how to build spatial models with delta
-function bases.  The size of these Gaussians may be derived from the
-FWHM of the template and science images using a heuristic; this
-heuristic needs to be derived and trained.  The overall number of
-bases becomes inflated by multiplying each basis with a set of
-Hermite--polynomials.  The number of bases needed will be determined
-using the Bayesian Information Criterion as a principled means to
-decide if a basis is necessary or not.
-
-\subsection{How do we determine which tract(s) to use}
-We need a piece of code to query the database, find the overlapping
-tracts, and coadd them.
-
-\subsection{What interpolation schemes and order are required for the matching kernel}
-The default for Winter2013 is to use Chebyshev polynomials for spatial
-interpolation.  A stretch goal will be to implement Gaussian processes
-(kriging).
-
-\subsection{Do we convolve before subtraction}
-RHL's idea
-
-\subsection{What is the anticipated effect of differential chromatic refraction}
-We do not have color-dependent Psf-matching kernels.  Both for $i$--band and $g$--band.
-
-\subsection{What metadata do we need to persist}
-
-\subsection{What is the processing time for ImageDifferenceTask}
-
-\subsection{What is the default Config for ImageDifferenceTask}
-\begin{python}
---config
-subtract.kernel.active.fitForBackground=True 
-subtract.kernel.active.spatialBgOrder=2 
-templateFwhm=0.75
-\end{python}
-
-%%%%%%
-
-\subsection{Detect/Measure Tasks on difference image} \becker
-
-\subsubsection{Deblending or no deblending}
-
-\subsubsection{What are the required pipeQA metrics (dipole detection etc)}
-
-\subsubsection{What tools are required to find out what has gone wrong}
-Psf reconstruction, kernel reconstruction, postage stamp generation, source catalog overlays
-
-\subsubsection{What do we measure (PSF quantities or model mags etc) on the images}
-
-\subsubsection{What metadata do we need to persist}
-
-\subsubsection{What is the processing time for Detect and Measure Tasks}
-
-\subsubsection{What is the default Config for Detect and Measure Tasks}
-\begin{python}
---config
-doDetection=True
-doMeasurement=True
-\end{python}
-
-%%%%%
-
-\clearpage \section{Database Ingestion} \simon
-\subsection{What is the processing time}
-Based on our experiences in Summer2012, we anticipate the following
-ingest times: 
-\begin{itemize}
-  \item Ingestion of calexp Sources: {\bf XXX s/visit}
-  \item Ingestion of template Sources: {\bf XXX s/visit}
-  \item Ingestion of difference image DiaSources: {\bf XXX s/visit}
-\end{itemize}
-This suggests a total ingest time of {\bf XXX} hours, with comparable
-time to build indices on the database.
-
-\subsection{What is the syntax for ingesting DiaSources}
-\begin{python}
-$DATAREL_DIR/bin/ingest/ingestSources.py [lsstSim]
-    ~becker/Winter2013/diffim_v0/tmpsdssdiff
-    --host=lsst10.ncsa.illinois.edu 
-    --database={yourDatabaseName} 
-    --table={yourTableName}
-    --dataset-type=goodSeeingDiff_src
-    --id visit=873161311 raft=3,0 sensor=0,2
-\end{python}
-%$
-
-\subsection{Who is in charge of doing it}
-Jacek.
-
-%%%%%%
-
-\clearpage \section{Production runs} \ajc
-
-\subsection{When do the final production runs need to be complete}
-
-\subsection{When do we need to run the first test production to iron out the bugs}
-
-\subsection{When should we start production}
-
-\subsection{How much data need to be processed}
-
-
-\end{document}
