@@ -17,7 +17,6 @@
 \parskip 7.2pt           % sets spacing between paragraphs
 \parindent 0pt		     % sets leading space for paragraphs
 
-
 \input{pythonlistings}
 \definecolor{orange}{rgb}{1.00,0.65,0.00}
 \def\arcsec{^{\prime\prime}}
@@ -169,7 +168,7 @@ deg (18 master flats) should bring this below the nominal 1\% error
 
 John will change the simulator to produce the chips in readout order
 instead of camera coordinates so that the orientation of the eimage is
-syncproniced with the assembled calexps.
+synchronized with the assembled calexps.
 
 \subsection{Issues}
 
@@ -369,8 +368,13 @@ This includes zeropoints, sky background, Psf FWHM.
 \subsection{Issues}
 
 \subsection{New Developments}
-Spreading of Mask bits.  How do we define the selection criteria, and
-select, input and reference images from the database.
+Spreading of Mask bits.  
+
+How do we define the selection criteria, and select, input and
+reference images from the database.
+
+We need a tool that measures how well PSF matching to a model PSF
+works. One source of such data is PSF-matched coadd temp exposures.
 
 \subsection{Tuning Parameters}
 
@@ -416,18 +420,155 @@ design specs.
 
 \clearpage 
 \section{ImageDifferenceTask} 
-There are two classes of options for the selection of objects used to
-model the Psf--matching Kernel.  The first involves use of a
-starSelectorRegistry.  This may be a ``second moment'' star selector
-to ensure that we only receive stars in the list, or a catalog--based
-selector that queries a reference catalog for sources, and may be used
-as a place--holder for a future specialized task that selects objects
-that are non--variable and have negligible proper motion.  The second
-option is to use native {\tt ip\_diffim} code that runs a very basic
-detection algorithm and then sorts by integrated flux.  This code was
-written long before starSelectorRegistries were implemented, and may
-arguably be deprecated.  In both cases, objects with corresponding
-Mask bits () set are ignored.
+
+The ImageDifferenceTask subtracts a template image that is
+Psf--matched to the Psf of an input science image, from that science
+image.  The residuals (the image difference, or difference image) will
+contain only those objects that have varied in position or brightness
+w.r.t. the template.  Detection and measurement will be run on the
+difference image to characterize the residuals, both at positive and
+negative polarity, and persisted as DiaSources.
+
+In detail, an input {\tt calexp} has a bounding box from which the
+Coadds will be queried.  The multiple SkyMap patches that overlap this
+bounding box will be assembled into a single Exposure using the
+ImageDifferenceTask.getTemplate method.  This mosaiced coadd
+(a.k.a. the ``template'') is assumed to have a consistent Psf and
+Calib; these values will be set from those in the first overlapping
+patch.  The astrometric registration, and the Psf--matching, will both
+happen on the template, leaving the {\tt calexp} pixels untouched.
+This may in some cases result in deconvolution of the template image.
+
+Next the Task selects the objects to be used to Psf match the {\tt
+  calexp} and template.  There are two options at the moment.  The
+first involves use of a starSelectorRegistry.  This may be a ``second
+moment'' star selector to ensure that we only receive stars in the
+list, or a catalog--based selector that queries a reference catalog
+for sources, and may be used as a place--holder for a future
+specialized task that selects objects that are non--variable and have
+negligible proper motion.  The second option is to use native {\tt
+  ip\_diffim} code that runs a very basic detection algorithm and then
+sorts by integrated flux.  This code was written long before
+starSelectorRegistries were implemented, and may arguably be
+deprecated.  In both cases, objects with corresponding Mask bits
+("EDGE", "SAT") set are ignored.  We will run detection on the source
+list from the template.  It may make sense instead to run selection on
+the source lists that come from measurement on the {\tt calexp} or the
+{\tt coadd}, tho the latter would have to be merged.
+
+We next run the ImagePsfMatchTask.  This accepts the two Exposures,
+the FWHM of their two Psfs, and the Source list as inputs.  The FWHM
+will be used in a heuristic to determine the shape of the bases used
+to model the Psf--matching kernel.  This heuristic needs to be tuned
+on sample runs.  The overall number of bases becomes inflated by
+multiplying each basis with a set of Hermite--polynomials.  The number
+of bases needed will be determined using the Bayesian Information
+Criterion as a principled means to decide if a basis is necessary or
+not.
+
+The internals of the ImagePsfMatchTask solve for $K(x,y)$ in the
+equation $S(x,y) = (K \otimes T)(x,y)$, where $S$ is the science
+calexp, $T$ is the template, and $K$ the Psf--matching kernel, by
+performing a linear decomposition of $K$ such that $K(u,v) = \sum_i
+a_i K_i(u,v)$.  The basis functions $K_i$ are decided using the
+heuristic above; thus the challenge is to solve for $a_i$.
+Additionally, the Psf--matching kernel is known to vary spatially
+across the image, thus the general problem is to solve for $a_i(x,y)$.
+This is accomplished by solving locally for $a_i$ at the positions
+$x,y$ of each object returned by the object selector, and creating a
+spatial model of these coefficients using a Chebyshev polynomial of
+order $N$.  We thus have {\it two} solutions that describe the quality
+of the Psf--match: using the original coefficients $a_i$; and using
+the interpolated coefficients $a{'}_i$ that are derived from the
+spatial model at $x,y$.  The distribution of residuals (mean and RMS
+of: the diffim residuals normalized by the square root of the
+variance) in each one of these KernelCandidates will be returned as
+metadata.  Importantly, we plan on using the residuals of a control
+sample of objects that are selected by the object selector, but not
+used in the actual kernel fit, to determine the overall quality of the
+difference image.
+
+This process results in a subtracted Exposure (the difference image).
+The detection planes of this image, inherited from the {\tt calexp}
+will be wiped clean in preparation for detection and measurement.  The
+Psf of the science image will be used to seed SourceDetectionTask,
+with sources of both positive and negative polarity.  In the absence
+of testing, the SourceDeblendTask task will be disabled.  Finally,
+SourceMeasurementTask will be performed on the difference image
+source catalog, using the aperture correction from the science image.  We
+will run an instance of a DipoleChecker class to search for and flag
+dipoles.  These will be persisted as DiaSources.  We require an
+association of these DiaSources with the reference catalog {\it and}
+the {\tt calexp} source catalog to assess where the sources are coming
+from.  At this stage, this must be done manually.  DiaSources will be
+written to the database in the {\tt WHAT} table, reference catalog
+matches in the {\tt WHAT} table, and {\tt calexp} Source matches in
+the {\tt WHAT} table.
+
+\subsection{Input/Outputs}
+
+Inputs are:
+\begin{itemize}
+\item A {\tt calexp} containing the science data, along with its {\tt
+  Psf} and {\tt Wcs}
+\item A set of Coadds that fully overlap the bounding box of the {\tt
+  calexp}
+\end{itemize}
+
+Outputs are:
+\begin{itemize}
+\item Difference Exposure (data product; detection planes are set)
+\item DiaSources (data product)
+\item Psf--matched Image (metadata in pipeBase.Struct)
+\item Psf--matching Kernel (metadata in pipeBase.Struct)
+\item Background match (metadata in pipeBase.Struct)
+\item KernelCellSet (metadata in pipeBase.Struct)
+\end{itemize}
+
+\subsection{ImagePsfMatchTask subTask}
+As described above, this subTask controls the actual Psf-matching of
+the {\tt calexp} and the template.  
+
+\subsection{SourceDetectionTask subTask}
+As described above, this subTask uses the Psf of the input {\tt
+  calexp} to run detection on the difference Exposure.  The detection
+Config will be set to search for objects of both positive and negative
+polarity.  Estimation and re--estimation of the background will both
+be disabled.
+
+\subsection{SourceDeblendTask subTask}
+As described above, this subTask is by default turned off.
+
+\subsection{SourceMeasurementTask subTask}
+As described above, this subTask performs measurement of the source
+catalog returned by SourceDetectionTask.  It requires the aperture
+correction of the {\tt calexp}.
+
+\subsection{Issues}
+We do not have color--dependent Psf--matching kernels,
+e.g. $K(x,y,g-r)$, which are needed in the presence of differential
+chromatic refraction.  This will impact the quality of the
+Psf--matching happening in ImagePsfMatchTask, in particular for
+objects of extreme color in the bluer passbands, and at high airmass.
+We will first investigate the fitting of $K(x,y)$ in the absence of
+DCR by operating on $i$--band data, and estimate the degradation in
+the quality of the solution when going to $g$--band through the
+control sample and debugging hooks.  Mitigation issues include
+templates at different airmasses, but this also requires sets both East
+and West of the meridian.
+
+We need to assess the impact of objects with large proper motion on
+the creation of the template, where the objects will appear elongated,
+and on the residuals in the difference image, where such an apparition
+will leave a complex dipole shape.  We will first investigate this by
+creating templates from a finite window in time, and apply them to
+images from a similar window.
+
+We need to understand how to turn off the majority of the measurements
+for the star selection, in the interest of speed.
+
+We need to establish the minimum signal--to--noise of an object to be
+used in Kernel fitting.
 
 The number of sources that are detected in any given image determine
 the complexity of the model that may be used to build a Psf--matching
@@ -436,39 +577,58 @@ spatial model based on the number of detected sources or not; this
 means that the {\tt Config} will describe the heuristics used to
 determine the spatial order of the models, and not the spatial order
 of the models themselves.  This information needs to be persisted as
-metadata if we choose to go this route.  We also need to establish the
-minimum signal--to--noise of an object to be used in Kernel fitting.
-
-By default, we will be using sum--of--Gaussian bases for Winter2013,
-given the outstanding issue of how to build spatial models with delta
-function bases.  The size of these Gaussians may be derived from the
-FWHM of the template and science images using a heuristic; this
-heuristic needs to be derived and trained.  The overall number of
-bases becomes inflated by multiplying each basis with a set of
-Hermite--polynomials.  The number of bases needed will be determined
-using the Bayesian Information Criterion as a principled means to
-decide if a basis is necessary or not.
-
-
-\subsection{Input/Outputs}
-
-\subsection{Calibrate/Detect/Measure subTasks}
-
-\subsection{Issues}
-We do not have color-dependent Psf-matching kernels.  
+metadata if we choose to go this route.
 
 \subsection{New Developments}
+We need to derive the number of bases to use, using e.g. the Bayesian
+Information Criterion.
+
 We need a piece of code to query the database, find the overlapping
-tracts, and coadd them into a template.  
+tracts, and coadd them into a template.  A stub for this exists in
+ImageDifferenceTask.getTemplate but has not been extensively tested.
 
 Do we use RHL's option to pre--convolve.
 
+We need a dipole flag for the DiaSources.
+
+We need source association for the DiaSources and the reference
+catalog sources, and also with the {\tt calexp} Sources.
+
+We need to exercise ingest of the DiaSources into MySQL.
+
+We need to establish metrics and quality ranges to assess the goodness
+of fit of the spatial kernel.
+
+We need to implement these metrics in pipeQA.
+
 \subsection{Tuning Parameters}
+We need to decide on the object selection algorithm used to seed the
+kernel fit.
+
+We need to tune the heuristic that chooses the shapes and number of
+basis function for the sum--of--Gaussian kernel basis.
+
 The default for Winter2013 is to use Chebyshev polynomials for spatial
-interpolation.  A stretch goal will be to implement Gaussian processes
-(kriging).
+interpolation.  We need to use decide on the necessary spatial order
+for this polynomial $N$.  A stretch goal will be to implement Gaussian
+processes (kriging).
+
 \subsection{Metrics and Testing}
+
+Important metrics that will be exercised pre--production include: the
+use of the BIC to determine the complexity of the kernel basis; an
+examination of objects with large residuals in subtractions that we
+expect to be nearly exact (what are their colors and proper motions).
+
+In production our core metrics will include: what are the residuals of
+a control sample of stars after application of the Psf--matching
+kernel.
+
 \subsection{Tools}
+Several debugging hooks have been implemented in {\tt ip\_diffim} for
+the visualization of the inputs and outputs to ImageDifferenceTask.
+What remains to be done is to turn these into pipeQA tests; currently
+no metrics querying the DiaSources exist.
 
 %%%%%%%
 
@@ -492,22 +652,30 @@ interpolation.  A stretch goal will be to implement Gaussian processes
 \small
 \begin{center}
 \caption{\label{tab-pars} Estimated Processing Times}
-\begin{tabular}{ccccc}
+\begin{tabular}{lcccc}
 \hline \hline
-Task                 & Time/Unit  & Units        & Number of Units & Total Time\\
+Task                          & Time/Unit     & Units        & Number of Units & Total Time\\
 \hline
-Build Registry       & 10 minutes & Visit        & XXX             &           \\ 
-ProcessCccdTask      &            & Ccd          & XXX             &           \\ % Sum of all 4 subtasks below
-~~~IsrTask           & 1 minute   & Ccd          & XXX             &           \\
-~~~SnapCombineTask   &            & Ccd          & XXX             &           \\
-~~~Calexp CDM        &            & Ccd          & XXX             &           \\
-~~~AstrometryTask    &            & Ccd          & XXX             &           \\
-MakeSkyMapTask       & 10 seconds & Skymap       & 1               &           \\
-MakeCoaddTempExpTask &            & Visit-Patch  & XXX             &           \\
-AssembleCoaddTask    &            & Patch        & XXX             &           \\   
-ProcessCoaddTask     &            & Patch        & XXX             &           \\
-ImageDifferenceTask  &            & Ccd          & XXX             &           \\
-Database Ingest      & 10$^{X}$/s & Rows         & XXX             &           \\
+Build Registry                & 10 min        & Visit        & XXX             &           \\ 
+ProcessCcdTask                & X min         & Ccd          & XXX             &           \\ % Sum of all 4 subtasks below
+~~~~~~IsrTask                 & 1 min         & $\cdots$     & $\cdots$        &           \\
+~~~~~~SnapCombineTask         &               & $\cdots$     & $\cdots$        &           \\
+~~~~~~Calexp CDM              &               & $\cdots$     & $\cdots$        &           \\
+~~~~~~AstrometryTask          &               & $\cdots$     & $\cdots$        &           \\
+MakeSkyMapTask                & 10 sec        & Skymap       & 1               &           \\
+MakeCoaddTempExpTask          &               & Visit-Patch  & XXX             &           \\
+AssembleCoaddTask             &               & Patch        & XXX             &           \\   
+ProcessCoaddTask              &               & Patch        & XXX             &           \\
+ImageDifferenceTask           &               & Ccd          & XXX             &           \\
+~~~~~~ImagePsfMatchTask       &               & $\cdots$     & $\cdots$        &           \\
+~~~~~~SourceDetectionTask     &               & $\cdots$     & $\cdots$        &           \\
+~~~~~~SourceMeasurementTask   &               & $\cdots$     & $\cdots$        &           \\
+~~~~~~SourceDeblendTask       &               & $\cdots$     & $\cdots$        &           \\
+\hline
+Database Ingest               & 10$^{-X}$ sec & Rows         & XXX             &           \\
+~~~~~~Calexp                  &               & Rows         & XXX             &           \\
+~~~~~~Coadd                   &               & Rows         & XXX             &           \\
+~~~~~~DiaSource               &               & Rows         & XXX             &           \\
 \hline
 \hline
 \end{tabular}
