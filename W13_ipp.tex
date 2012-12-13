@@ -88,7 +88,7 @@ Configs for each Task.
 %%%%%%%
 
 \clearpage 
-\section{ImSim Input Data} 
+\section{ImSim Input Data} \ajc
 
 The sets of simulated images produced for Summer 2012 (which will be
 the inputs for Winter 2013 late production) are described at \\{\tt
@@ -181,7 +181,12 @@ of work before it can be submitted for review.
 %%%%%%%
 
 \clearpage 
-\section{ProcessCcdTask} 
+\section{CreateCalibrationProductsTask} \simon
+
+%%%%%%%
+
+\clearpage 
+\section{ProcessCcdTask} \simon
 
 \subsection{Input/Outputs}
 
@@ -195,9 +200,9 @@ Outputs will be:
 \end{itemize}
 
 
-\subsection{IsrTask}
+\subsection{IsrTask} \simon
 
-\subsection{SnapCombineTask}
+\subsection{SnapCombineTask} \becker
 
 The baseline LSST observing plans defines a field ``visit'' as the
 acquisition of two back--to--back images (called Snaps) and their
@@ -260,7 +265,7 @@ the first snap of the visit pair.  The FITS keywords that will {\it
   not} be modified in this process, and that are common between the
 two Snaps, include: {\bf Filter}.
 
-\subsection{Calibrate/Detect/Measure subTasks}
+\subsection{Calibrate/Detect/Measure subTasks} \simon
 The important parameters to consider are:
 \begin{itemize} 
 \item background grid size -- There are several of these in the config
@@ -271,7 +276,7 @@ The important parameters to consider are:
 \item galaxy shape parameters
 \end{itemize}
 
-\subsection{AstrometryTask} 
+\subsection{AstrometryTask} \simon
 
 We already have a stars only reference catalog for the entire area
 covered by the W13 ImSim area.  We will produce the galaxy catalog to
@@ -340,7 +345,7 @@ purity () of this sample as metrics to optimize.
 %%%%%%%
 
 \clearpage 
-\section{MakeSkyMapTask} 
+\section{MakeSkyMapTask} \russ
 
 \subsection{Input/Outputs}
 \subsection{Issues}
@@ -355,7 +360,7 @@ the inner region of a tract.
 %%%%%%%
 
 \clearpage 
-\section{MakeCoaddTempExpTask} 
+\section{MakeCoaddTempExpTask} \yusra
 
 The input images will be Psf--matched to a designed template Psf
 before coaddition.  This Psf will be a circular double Gaussian
@@ -366,7 +371,7 @@ contribute {\bf $10\%$} of the total flux.
 
 \subsection{Input/Outputs}
 
-\subsection{WarpAndPsfMatchTask subTask}
+\subsection{WarpAndPsfMatchTask subTask} \becker
 This subTask first undertakes the Psf--matching of the input {\tt
   calexp} to that desired for the Coadd.  It then astrometrically
 warps this Psf--matched to the astrometric footprint of the Coadd.
@@ -446,6 +451,8 @@ to {\bf XXX} in coadded images, and will vary spatially.
 
 \subsection{New Developments}
 
+Code to select from database
+
 \subsection{Tuning Parameters}
 We will need to test the following Psf--matching configs:
 \begin{itemize}
@@ -462,7 +469,7 @@ We will need to test the following Psf--matching configs:
 %%%%%%%
 
 \clearpage 
-\section{AssembleCoaddTask} 
+\section{AssembleCoaddTask} \yusra
 
 The coadded template image will be constructed using background
 matching, as opposed to background subtraction.  The image subtraction
@@ -475,9 +482,11 @@ This includes zeropoints, sky background, Psf FWHM.
 
 \subsection{Input/Outputs}
 
-\subsection{BackgroundMatchingTask} 
+\subsection{BackgroundMatchingTask} \yusra
 
 \subsection{Issues}
+
+Flux scaling (2-d spline)
 
 \subsection{New Developments}
 Spreading of Mask bits.  
@@ -488,6 +497,8 @@ reference images from the database.
 We need a tool that measures how well PSF matching to a model PSF
 works. One source of such data is PSF-matched coadd temp exposures.
 
+Flux scaling (2-d spline)
+
 \subsection{Tuning Parameters}
 
 \subsection{Metrics and Testing}
@@ -497,7 +508,7 @@ works. One source of such data is PSF-matched coadd temp exposures.
 %%%%%%%
 
 \clearpage 
-\section{ProcessCoaddTask} 
+\section{ProcessCoaddTask} \simon
 
 To optimize the basis shapes matching the template image to a science
 image, we require the Psf of the template image.  This level of
@@ -531,7 +542,7 @@ design specs.
 %%%%%%%
 
 \clearpage 
-\section{ImageDifferenceTask \label{sec-imagedifftask}} 
+\section{ImageDifferenceTask \label{sec-imagedifftask}} \becker
 
 The ImageDifferenceTask subtracts a template image that is
 Psf--matched to the Psf of an input science image, from that science
@@ -579,9 +590,10 @@ will be used in a heuristic to determine the shape of the bases used
 to model the Psf--matching kernel.  This heuristic needs to be tuned
 on sample runs.  The overall number of bases becomes inflated by
 multiplying each basis with a set of Hermite--polynomials.  The number
-of bases needed will be determined using the Bayesian Information
-Criterion as a principled means to decide if a basis is necessary or
-not.
+of bases ultimately used will be determined in pre--production by
+using a principled means of deciding how much information each basis
+contributes to the solution.  The Bayesian Information Criterion
+provides one such means.
 
 The internals of the ImagePsfMatchTask solve for $K(x,y)$ in the
 equation $S(x,y) = (K \otimes T)(x,y)$, where $S$ is the science
@@ -773,10 +785,9 @@ no metrics querying the DiaSources exist.
 %%%%%%%
 
 \clearpage 
-\section{Database Ingestion} 
+\section{Database Ingestion} \simon
 
 \subsection{Input/Outputs}
-\subsection{Calibrate/Detect/Measure subTasks}
 \subsection{Issues}
 \subsection{New Developments}
 \subsection{Tuning Parameters}
@@ -786,7 +797,15 @@ no metrics querying the DiaSources exist.
 %%%%%%%
 
 \clearpage 
-\section{Estimated Processing Times} 
+\section{Summary} \becker
+
+\subsection{Tall Poles}
+
+
+%%%%%%%
+
+\clearpage 
+\section{Estimated Processing Times} \russ
 
 \begin{table*}[h]
 \small
