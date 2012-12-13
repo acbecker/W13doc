@@ -228,24 +228,25 @@ This amplitude of shifts suggests that image registration techniques
 will be necessary for Winter2013 processing. 
 
 SnapCombine's SnapPsfMatchTask differs from ImagePsfMatchTask,
-described in detail in Section~\ref{sec-imagedifftask}, in three ways
-to reflect the prior expectation that the images are not significantly
-different.  First the spatial order of the matching kernel is set to
-0, indicating a constant matching kernel across the iamge.  {\it For
-  this reason it may be desirable to test out the delta--function
-  kernel set in this environment}.  Second the size of the matching
-kernel is approximately half the size of the ImagePsfMatchTask
-matching kernel because shape is expected to be approximately a delta
-function.  Finally, the sum--of--Gaussian basis set is smaller (21
-terms) than the default ImagePsfMatchTask set (31 terms).  The size of
-this basis set is a tuning parameter for the production run.
+described in detail in Section~\ref{sec-imagedifftask}, in three major
+ways to reflect the prior expectation that the images are not
+significantly different.  First the spatial order of the matching
+kernel is set to 0, indicating a constant matching kernel across the
+image.  {\it For this reason it may be desirable to test out the
+  delta--function kernel set in this environment}.  Second the size of
+the matching kernel is approximately half the size of the
+ImagePsfMatchTask matching kernel because shape is expected to be
+approximately a delta function.  Finally, the sum--of--Gaussian basis
+set is smaller (21 terms) than the default ImagePsfMatchTask set (31
+terms).  The size of this basis set is a tuning parameter for the
+production run.
 
 After the snap difference Exposure is created, detection is next with
 thresholdPolarity set to ``both''.  Measurement is then run on these
 detections.  We currently do {\it not} have tools to reliably
 distinguish true cosmic rays from the cores of bright stars.  Thus it
 remains an open issue how aggressive we may be in masking out these
-measurements.  We may compare the list of masked objecst with the
+measurements.  We may compare the list of masked objects with the
 known cosmic ray list, and with the known star list, to examine our
 efficiency and purity.  These query tools do not exist yet.
 
@@ -256,7 +257,7 @@ The FITS keywords that need to be modified in this process include:
 process, but that do reflect metadata that are different between the
 two Snaps, include : {\bf WCS}.  These features will be copied from
 the first snap of the visit pair.  The FITS keywords that will {\it
-  not} be modified in this process, and that are commong between the
+  not} be modified in this process, and that are common between the
 two Snaps, include: {\bf Filter}.
 
 \subsection{Calibrate/Detect/Measure subTasks}
@@ -307,7 +308,7 @@ We have not explored thoroughly the set of measurements that come from
 the snap difference (efficiency and purity), and which are used to
 mask pixels.
 
-We do not know exacly how to obtain the list of cosmic rays that were
+We do not know exactly how to obtain the list of cosmic rays that were
 input (locations, shapes and amplitudes).
 
 \subsection{New Developments}
@@ -365,7 +366,58 @@ contribute {\bf $10\%$} of the total flux.
 
 \subsection{Input/Outputs}
 
+\subsection{WarpAndPsfMatchTask subTask}
+This subTask first undertakes the Psf--matching of the input {\tt
+  calexp} to that desired for the Coadd.  It then astrometrically
+warps this Psf--matched to the astrometric footprint of the Coadd.
+The Psf--matching happens through the ModelPsfMatchTask subTask.  This
+differs from ImagePsfMatchTask, described in detail in
+Section~\ref{sec-imagedifftask}, in one major detail.  In this case,
+the {\tt calexp's} {\it model} Psf is taken from the butler, and
+compared to the idealized Psf that we wish to realize for the Coadd.
+Each Psf is realized in a grid of $x,y$ positions around the {\tt
+  calexp} to account for spatial variation of the {\tt calexp} Psf
+(the Coadd Psf model will not be designed to vary).  This will be
+entered into a KernelCandidate, which it itself entered into a
+SpatialCellSet, and sent along to the fitting code where the
+functionality is again the same as ImagePsfMatchTask.  Because the
+concept of ``variance'' is nebulous when comparing model--to--model,
+all sigma clipping is turned off and the variance is assumed to have a
+constant weight.
+
+There is trade--off in this process that needs to be explored in
+detail.  First--off, we define the dimensions of the {\tt calexp} Psf
+as $P \times P$, the FWHM of the Coadd Psf as $C$, and the dimensions
+of the Psf--matching kernel as $K \times K$.  When fitting for the
+matching Kernel, each Psf image gets convolved with the Kernel basis
+functions, trimming $K//2$ pixels off of each side due to EDGE
+effects.  Thus the final number of pixels we have to constrain the
+Kernel coefficients are $(P-K) \times (P-K)$.  This means that as the
+Kernel gets larger, the number of pixels we have to constrain the
+solution gets smaller, and the solution may become unstable.
+Providing tension in the other direction is that if the kernel
+dimensions too small, to the extent that $P//2 < n \times C$ (i.e. its
+smaller than say $n=3$ times the FWHM of the Psf you are matching to),
+the kernel stamp is not large enough to capture all the power needed
+to match to that large of a FWHM.  This ends up yielding ``boxy''
+Psf--matched images.  Ultimately, we are limited by the dimensions of
+the {\tt calexp} Psf model $P$, which in turn sets the maximum size of
+the kernel such that $(P-K) \times (P-K)$ provides sufficient ability
+to constrain all of the Kernel basis coefficients, which in turn sets
+the size of the Psf we may match to ($C = P//2 / n$) without
+sufficiently impacting the shapes of the stars.  This trade--off,
+including the definitions of ``sufficient'' above, have not been
+explored in through detail.
+
 \subsection{Issues}
+
+The process of Psf--matching first, and then warping to the Coadd
+footprint, may fail to represent the true shape of the Coadd Psf (in
+pixel space) near the edges of tracts.
+
+We have not explored the trade--offs between Psf dimensions, matching
+kernel dimensions, and the FWHM of the Psf we may match to.
+
 We do not have color-dependent Psfs.  This will be minimized by
 analysis of $i$--band data, and explored in analysis of $g$--band
 data.
@@ -389,6 +441,7 @@ We will need to test the following Psf--matching configs:
 \end{itemize}
 
 \subsection{Metrics and Testing}
+
 \subsection{Tools}
 
 %%%%%%%
