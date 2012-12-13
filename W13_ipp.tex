@@ -347,15 +347,65 @@ purity () of this sample as metrics to optimize.
 \clearpage 
 \section{MakeSkyMapTask} \russ
 
+Creates a "sky map": a sky pixelization for coadds consisting of a collection of overlapping "tracts".
+Each tract is, essentially, a very large exposure with its own WCS.
+Tracts are subdivided into rectangular overlapping subregions called "patches".
+
+The sky map we plan to use is DodecaSkyMap. It has 12 tracts arranged as the faces of a dodecahedron.
+An alternative if we decide we want more smaller tracts is HealpixSkyMap which arranges
+tracts as pixels in a HEALPix arrangement.
+
 \subsection{Input/Outputs}
+
+As for all tasks, specify an input and (optionally) output data repository.
+makeSkyMap creates a sky map in the output repository.
+A repository may have two sky maps: one for "deep" coadds and one for "goodSeeing" coadds.
+
 \subsection{Issues}
-It would be helpful if we tested some fields that were at the edge of
-the inner region of a tract.
+
+DodecaSkyMap has large tracts which have significant distortion at the edges.
+We don't believe this will be an issue for image differencing because the template is warped
+to match the science exposure before subtracting. If it does prove to be a problem
+we can switch to using HealpixSkyMap with smaller tracts.
+
+SkyMap unpersistence has been a bit troublesome due to pickling pex_config fields.
+When pex_config changes sometimes this breaks SkyMap unpersistence. We must fix this eventually.
+I don't think it's a high priority, but we could try to fix it in time for late Winter2012 production.
+
 \subsection{New Developments}
+
+None. If we do decide to switch to HealpixSkyMap then we must make healpy an LSST package.
+Healpy is self-contained other than needing cfitsio.
+
 \subsection{Tuning Parameters}
 
+These are the default parameters for LSSTSim:
+
+\begin{python}
+coaddName='deep' # or 'goodSeeing'
+skyMap.name='dodeca'
+skyMap.active.withTractsOnPoles=False
+skyMap.active.projection='STG'
+skyMap.active.patchInnerDimensions=[4000, 4000]
+skyMap.active.pixelScale=0.2
+skyMap.active.patchBorder=250
+skyMap.active.tractOverlap=3.5
+\end{python}
+
+Image differencing should not be sensitive to these parameters.
+
+The overlap between tracts may be larger than necessary, but the main effect of that
+will be to slightly increase storage requirements of coadds and slightly increase
+the time required to generate them. We will not see either effect in late Winter2012
+because we are only working with a small region on the sky.
+
 \subsection{Metrics and Testing}
+
+No testing is required.
+
 \subsection{Tools}
+
+Skymap examples/plotSkyMap prints out useful information about a sky map and displays a 3d graph of it.
 
 %%%%%%%
 
