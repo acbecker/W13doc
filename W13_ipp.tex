@@ -196,6 +196,7 @@ Outputs will be:
 
 
 \subsection{IsrTask}
+
 \subsection{SnapCombineTask}
 
 The baseline LSST observing plans defines a field ``visit'' as the
@@ -224,23 +225,37 @@ is the amount of image motion between Snaps in the data.  The
 amplitude of these shifts in the Winter2013 test data, determined
 through manual source detection and matching, is {\bf XX}$\arcsec$.
 This amplitude of shifts suggests that image registration techniques
-will be necessary for Winter2013 processing.  It remains an
-outstanding issue (but beyond the scope of this planning document) if
-these shifts reflect a realistic amount of image motion for an
-LSST--like system.
+will be necessary for Winter2013 processing. 
 
-The detection and masking of CRs will proceed as follows:
+SnapCombine's SnapPsfMatchTask differs from ImagePsfMatchTask,
+described in detail in Section~\ref{sec-imagedifftask}, in three ways
+to reflect the prior expectation that the images are not significantly
+different.  First the spatial order of the matching kernel is set to
+0, indicating a constant matching kernel across the iamge.  Second the
+size of the matching kernel is approximately half the size of the
+ImagePsfMatchTask matching kernel because shape is expected to be
+approximately a delta function.  Finally, the basis set is smaller (21
+terms) than the default ImagePsfMatchTask set (31 terms).  The size of
+this basis set is a tuning parameter for the production run.
 
-How do we make sure we only mask out undetected cosmic rays and not
-differences in stars.  
+After the snap difference Exposure is created, detection is next with
+thresholdPolarity set to ``both''.  Measurement is then run on these
+detections.  We currently do {\it not} have tools to reliably
+distinguish true cosmic rays from the cores of bright stars.  Thus it
+remains an open issue how aggressive we may be in masking out these
+measurements.  We may compare the list of masked objecst with the
+known cosmic ray list, and with the known star list, to examine our
+efficiency and purity.  These query tools do not exist yet.
 
 The combined Exposure will have an exposure time equivalent to the sum
 of the two input Snaps (i.e. this will {\it not} be an average image).
 The FITS keywords that need to be modified in this process include:
 {\bf XXX}.  The FITS keywords that will {\it not} be modified in this
-process, but that reflect metadata that are different between the two
-Snaps, include : {\bf WCS}.  These features will be copied from the
-first snap of the visit pair.
+process, but that do reflect metadata that are different between the
+two Snaps, include : {\bf WCS}.  These features will be copied from
+the first snap of the visit pair.  The FITS keywords that will {\it
+  not} be modified in this process, and that are commong between the
+two Snaps, include: {\bf Filter}.
 
 \subsection{Calibrate/Detect/Measure subTasks}
 The important parameters to consider are:
@@ -283,12 +298,33 @@ done before.
 
 \subsection{Issues}
 
+We have not explored thoroughly the set of measurements that come from
+the snap difference (efficiency and purity), and which are used to
+mask pixels.
+
+We do not know exacly how to obtain the list of cosmic rays that were
+input (locations, shapes and amplitudes).
+
 \subsection{New Developments}
+
+We need code to reliably distinguish cosmic rays from the cores of
+bright stars.
+
+We need code to associate SnapCombine measurements with known cosmic
+rays, and with the known locations of stars.
+
 The reference catalog needs to have time--dependent entries.
 
 \subsection{Tuning Parameters}
 
+The size of the basis set used to perform the SnapPsfMatchTask.
+
 \subsection{Metrics and Testing}
+
+To determine how well we are detecting cosmic rays, we will
+cross--match the list of masked pixels with the cosmic ray list, and
+with the known star list.  We will calculate the efficiency () and
+purity () of this sample as metrics to optimize.
 
 \subsection{Tools}
 
@@ -419,7 +455,7 @@ design specs.
 %%%%%%%
 
 \clearpage 
-\section{ImageDifferenceTask} 
+\section{ImageDifferenceTask \label{sec-imagedifftask}} 
 
 The ImageDifferenceTask subtracts a template image that is
 Psf--matched to the Psf of an input science image, from that science
