@@ -231,10 +231,12 @@ SnapCombine's SnapPsfMatchTask differs from ImagePsfMatchTask,
 described in detail in Section~\ref{sec-imagedifftask}, in three ways
 to reflect the prior expectation that the images are not significantly
 different.  First the spatial order of the matching kernel is set to
-0, indicating a constant matching kernel across the iamge.  Second the
-size of the matching kernel is approximately half the size of the
-ImagePsfMatchTask matching kernel because shape is expected to be
-approximately a delta function.  Finally, the basis set is smaller (21
+0, indicating a constant matching kernel across the iamge.  {\it For
+  this reason it may be desirable to test out the delta--function
+  kernel set in this environment}.  Second the size of the matching
+kernel is approximately half the size of the ImagePsfMatchTask
+matching kernel because shape is expected to be approximately a delta
+function.  Finally, the sum--of--Gaussian basis set is smaller (21
 terms) than the default ImagePsfMatchTask set (31 terms).  The size of
 this basis set is a tuning parameter for the production run.
 
@@ -298,6 +300,9 @@ done before.
 
 \subsection{Issues}
 
+We need to determine if this is a viable place to test out the
+delta--function basis set.
+
 We have not explored thoroughly the set of measurements that come from
 the snap difference (efficiency and purity), and which are used to
 mask pixels.
@@ -317,7 +322,10 @@ The reference catalog needs to have time--dependent entries.
 
 \subsection{Tuning Parameters}
 
-The size of the basis set used to perform the SnapPsfMatchTask.
+The type of basis set (sum--of--Gaussian or delta--function) used to
+perform the SnapPsfMatchTask.
+
+The size of the sum--of--Gaussian basis set if it is used.
 
 \subsection{Metrics and Testing}
 
