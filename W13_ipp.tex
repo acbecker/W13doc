@@ -4,7 +4,7 @@
 \usepackage{amssymb,amsmath}
 \usepackage{titletoc}
 \usepackage{color}
-
+\usepackage{graphicx}
 \usepackage[toc,page]{appendix}
 
 % HOW TO SET UP AN 8.5 x 11:
@@ -44,7 +44,7 @@
 %\titlecontents{subsection}[4.8em]{}{\contentslabel{2.4em}}{\hspace*{-2.8m}}{...}
 %\titlecontents{subsubsection}[6.0em]{}{\contentslabel{2.4em}}{\hspace*{-2.8m}}{}
 
-\author{Andrew Becker, Simon Krughoff, Andy Connolly}
+\author{Andrew Becker, Simon Krughoff, Andrew Connolly, Yusra AlSayyad, Russ Owen}
 \title{Roadmap for Winter2013 Production}
 \date{\today}
 
@@ -385,6 +385,7 @@ concept of ``variance'' is nebulous when comparing model--to--model,
 all sigma clipping is turned off and the variance is assumed to have a
 constant weight.
 
+
 There is trade--off in this process that needs to be explored in
 detail.  First--off, we define the dimensions of the {\tt calexp} Psf
 as $P \times P$, the FWHM of the Coadd Psf as $C$, and the dimensions
@@ -407,7 +408,17 @@ to constrain all of the Kernel basis coefficients, which in turn sets
 the size of the Psf we may match to ($C = P//2 / n$) without
 sufficiently impacting the shapes of the stars.  This trade--off,
 including the definitions of ``sufficient'' above, have not been
-explored in through detail.
+explored in thorough detail.
+
+When choosing the desired FWHM of the Coadd, we will use the
+distribution of FWHM of the input data.  Typically this comes from the
+second or third quartile of the distribution; if we choose too narrow
+of a FWHM to make a ``good seeing'' coadd, either we convolve the
+smaller fraction of the data whose FWHM are less than the target, or
+we deconvolve some fraction of the data.  The degree to which
+deconvolution of the input images helps or hurts the salient qualities
+of the coadd (depth, noise, and Psf) have not been fully explored in
+detail.
 
 \subsection{Issues}
 
@@ -421,6 +432,10 @@ kernel dimensions, and the FWHM of the Psf we may match to.
 We do not have color-dependent Psfs.  This will be minimized by
 analysis of $i$--band data, and explored in analysis of $g$--band
 data.
+
+We need to understand ``how much'' deconvolution the code can handle,
+both in terms of the fraction of images that were deconvolved, and the
+degree to which each of the images is deconvolved.
 
 The {\tt meas\_mosaic}, which is a port of HSC's \"{u}ber cal, is
 necessary to correct known deficiencies in LSST's {\tt meas\_astrom}
@@ -530,28 +545,33 @@ In detail, an input {\tt calexp} has a bounding box from which the
 Coadds will be queried.  The multiple SkyMap patches that overlap this
 bounding box will be assembled into a single Exposure using the
 ImageDifferenceTask.getTemplate method.  This mosaiced coadd
-(a.k.a. the ``template'') is assumed to have a consistent Psf and
-Calib; these values will be set from those in the first overlapping
-patch.  The astrometric registration, and the Psf--matching, will both
-happen on the template, leaving the {\tt calexp} pixels untouched.
-This may in some cases result in deconvolution of the template image.
+(a.k.a. the ``template'') is assumed to have a constant Psf and Calib
+across patches; these values will be set from those in the first
+overlapping patch.  The astrometric registration, and the
+Psf--matching, will both happen on the template, leaving the {\tt
+  calexp} pixels untouched.  This may in some cases result in
+deconvolution of the template image.  The is a general sense that the
+template may be deconvolved more reliably than the single--depth
+images, due to its higher signal--to--noise, but this has not been
+quantified.
 
 Next the Task selects the objects to be used to Psf match the {\tt
   calexp} and template.  There are two options at the moment.  The
-first involves use of a starSelectorRegistry.  This may be a ``second
-moment'' star selector to ensure that we only receive stars in the
-list, or a catalog--based selector that queries a reference catalog
-for sources, and may be used as a place--holder for a future
-specialized task that selects objects that are non--variable and have
-negligible proper motion.  The second option is to use native {\tt
-  ip\_diffim} code that runs a very basic detection algorithm and then
-sorts by integrated flux.  This code was written long before
-starSelectorRegistries were implemented, and may arguably be
-deprecated.  In both cases, objects with corresponding Mask bits
-("EDGE", "SAT") set are ignored.  We will run detection on the source
-list from the template.  It may make sense instead to run selection on
-the source lists that come from measurement on the {\tt calexp} or the
-{\tt coadd}, tho the latter would have to be merged.
+first involves use of a starSelectorRegistry.  This currently uses a
+``second moment'' star selector to ensure that we only receive stars
+in the list, but we may also adopt catalog--based selector that
+queries a reference catalog for sources, and may be used as a
+place--holder for a future specialized task that selects objects that
+are non--variable and have negligible proper motion.  The second
+option is to use native {\tt ip\_diffim} code that runs a very basic
+detection algorithm and then sorts by integrated flux.  This code was
+written long before starSelectorRegistries were implemented, and may
+arguably be deprecated.  In both cases, objects with Mask bits set in
+the Config (currently "EDGE" and "SAT") set are ignored.  We will run
+selection on the source list from the template, as this should not
+contain transient objects.  Another option is to instead run selection
+on the source lists that come from measurement on the {\tt calexp} or
+the {\tt coadd}, although the latter would have to be merged.
 
 We next run the ImagePsfMatchTask.  This accepts the two Exposures,
 the FWHM of their two Psfs, and the Source list as inputs.  The FWHM
@@ -580,19 +600,19 @@ the interpolated coefficients $a{'}_i$ that are derived from the
 spatial model at $x,y$.  The distribution of residuals (mean and RMS
 of: the diffim residuals normalized by the square root of the
 variance) in each one of these KernelCandidates will be returned as
-metadata.  Importantly, we plan on using the residuals of a control
-sample of objects that are selected by the object selector, but not
-used in the actual kernel fit, to determine the overall quality of the
+metadata.  Importantly, we will use the residuals of a control sample
+of objects that are selected by the object selector, but not used in
+the actual kernel fit, to determine the overall quality of the
 difference image.
 
 This process results in a subtracted Exposure (the difference image).
 The detection planes of this image, inherited from the {\tt calexp}
 will be wiped clean in preparation for detection and measurement.  The
 Psf of the science image will be used to seed SourceDetectionTask,
-with sources of both positive and negative polarity.  In the absence
-of testing, the SourceDeblendTask task will be disabled.  Finally,
-SourceMeasurementTask will be performed on the difference image
-source catalog, using the aperture correction from the science image.  We
+with sources of both positive and negative polarity.
+SourceDeblendTask is currently disabled in measurement.  Finally,
+SourceMeasurementTask will be performed on the difference image source
+catalog, using the aperture correction from the science image.  We
 will run an instance of a DipoleChecker class to search for and flag
 dipoles.  These will be persisted as DiaSources.  We require an
 association of these DiaSources with the reference catalog {\it and}
@@ -676,13 +696,30 @@ determine the spatial order of the models, and not the spatial order
 of the models themselves.  This information needs to be persisted as
 metadata if we choose to go this route.
 
+We need to establish how much the template may be deconvolved in the
+case that the science data have a narrower FWHM.  Alternately, we need
+to understand the impacts of convolving the science image on the depth
+we may detect to in the difference image.
+
 \subsection{New Developments}
-We need to derive the number of bases to use, using e.g. the Bayesian
-Information Criterion.
+We need to evaluate the number of bases needed, using e.g. the
+Bayesian Information Criterion, as a function of Psf FWHM and
+variation.
+
+We need to tune the heuristic that selects the shapes of the Gaussians
+based on the FWHM of the {\tt calexp} and the template.
 
 We need a piece of code to query the database, find the overlapping
 tracts, and coadd them into a template.  A stub for this exists in
 ImageDifferenceTask.getTemplate but has not been extensively tested.
+
+\ajc Define the database query to specify the overlapping tracts that
+will be used for template generation (stub exists in
+ImageDifferenceTask.getTemplate)
+
+We need to create a catalog--based selector to return objects for
+Kernel modeling, if we choose to use this over the second--moment star
+selector.
 
 Do we use RHL's option to pre--convolve.
 
@@ -697,6 +734,12 @@ We need to establish metrics and quality ranges to assess the goodness
 of fit of the spatial kernel.
 
 We need to implement these metrics in pipeQA.
+
+Stretch goals : study of new bases, and Gaussian processes for
+interpolation.
+
+Turn into core chunks of work!
+> - Develop Gaussian Processes based interpolation and evaluate against polynomial interpolation
 
 \subsection{Tuning Parameters}
 We need to decide on the object selection algorithm used to seed the
@@ -785,9 +828,6 @@ Database Ingest               & 10$^{-X}$ sec & Rows         & XXX             &
 
 \clearpage 
 \begin{appendices}
-
-\section{Flow Chart} \ajc
-
 \section{Task Command lines and Configs}
 
 \subsection{ProcessCcdTask}
@@ -841,6 +881,14 @@ $DATAREL_DIR/bin/ingest/ingestSources.py [lsstSim]
     --id visit=873161311 raft=3,0 sensor=0,2
 \end{python}
 %$
+
+%%%%%%%
+
+\section{Flow Chart} 
+\includegraphics[height=0.7\textheight,angle=90]{flowChart.eps}
+
+\clearpage 
+
 \end{appendices}
 %%%%%%%
 %%%%%%%
