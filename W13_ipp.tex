@@ -206,13 +206,13 @@ Outputs will be:
 
 The baseline LSST observing plans defines a field ``visit'' as the
 acquisition of two back--to--back images (called Snaps) and their
-combination into a single visit Exposure.  The reason for this is to
-reject cosmic rays that are fall outside the detection thresholds of
+combination into a single visit Exposure.  The motivation for this is
+to reject cosmic rays that fall outside the detection thresholds of
 single--image CR rejection routines.  By subtracting the two snaps
-(snap2 - snap1), CRs may be detected with either positive or negative
-polarity, indicating a CR in the second or first snap, respectively.
-These pixels will be masked, and the two snaps coadded into the final
-visit Exposure.
+(snap2 - snap1), CRs may be detected in the difference as objects with
+either positive or negative polarity, indicating a CR in the second or
+first snap, respectively.  These pixels will be masked and
+interpolated, and the two snaps coadded into the final visit Exposure.
 
 There are two options to creating the image difference on which CRs
 will be detected.  The first is to take a straight difference of the
@@ -226,37 +226,55 @@ in Psf--matching, the shapes of the CRs will be distorted, potentially
 making them more difficult to detect.
 
 The outstanding issue driving the decision to use Psf--matching or not
-is the amount of image motion between Snaps in the data.  The
-amplitude of these shifts in the Winter2013 test data, determined
-through manual source detection and matching, is {\bf XX}$\arcsec$.
-This amplitude of shifts suggests that image registration techniques
-will be necessary for Winter2013 processing. 
+is the amount of image motion between Snaps in the W13 ImSim data.
+The amplitude of these shifts in the Winter2013 test data, determined
+through manual source detection and matching, is up to 0.12$\arcsec$
+(0.6 pixels).  This amplitude of shift requires that image
+registration techniques will be necessary for Winter2013 processing.
 
-SnapCombine's SnapPsfMatchTask differs from ImagePsfMatchTask,
-described in detail in Section~\ref{sec-imagedifftask}, in three major
-ways to reflect the prior expectation that the images are not
-significantly different.  First the spatial order of the matching
-kernel is set to 0, indicating a constant matching kernel across the
-image.  {\it For this reason it may be desirable to test out the
-  delta--function kernel set in this environment}.  Second the size of
-the matching kernel is approximately half the size of the
-ImagePsfMatchTask matching kernel because shape is expected to be
-approximately a delta function.  Finally, the sum--of--Gaussian basis
-set is smaller (21 terms) than the default ImagePsfMatchTask set (31
-terms).  The size of this basis set is a tuning parameter for the
-production run.
+The Task that executes this, SnapCombine's SnapPsfMatchTask, is
+configured differently than ImagePsfMatchTask, described in detail in
+Section~\ref{sec-imagedifftask}, in three major ways to reflect the
+prior expectation that the quality of the images is not significantly
+different:
 
-After the snap difference Exposure is created, detection is next with
-thresholdPolarity set to ``both''.  Measurement is then run on these
-detections.  We currently do {\it not} have tools to reliably
-distinguish true cosmic rays from the cores of bright stars.  Thus it
-remains an open issue how aggressive we may be in masking out these
-measurements.  We may compare the list of masked objects with the
-known cosmic ray list, and with the known star list, to examine our
-efficiency and purity.  These query tools do not exist yet.
+-- First the spatial order of the matching kernel is set to 0,
+indicating a constant matching kernel across the image.  {\it For this
+  reason we will be testing the delta--function kernel basis set in
+  this environment}.  The delta--function kernel set is more sensntive
+to noise than sum--of--Gaussian basis sets, but better able to model
+fractional pixel shifts without significant shape distortions.  The
+zero--order spatial model will help to regularize the overfitting
+problem.
 
-The combined Exposure will have an exposure time equivalent to the sum
-of the two input Snaps (i.e. this will {\it not} be an average image).
+-- Second the size of the matching kernel is approximately half the
+size of the ImagePsfMatchTask matching kernel, as the kernel power is
+expected to look like an (offset) delta function.
+
+-- Finally, we {\it will} be comparing the delta--function basis
+results with a sum--of--Gaussian basis set.  However, this basis set
+will be smaller than the default ImagePsfMatchTask set (31 terms).
+The size of this basis set is a tuning parameter for the production
+run.
+
+After the snap difference Exposure is created, detection is run with
+thresholdPolarity set to ``both''.  Measurement is then executed on
+these detections.  Because these measurements will be used to mask and
+interpolate pixels, it is essential that we are able to distinguish
+the signal (cosmic rays) from the noise (the most significant
+contaminant are the cores of bright stars).  We currently do {\it not}
+have tools to reliably distinguish true cosmic rays from the cores of
+bright stars in these snap differences; thus this is a core
+developmennt task for W13 processing.  We will compare the Snap
+DiaSource lists to the known cosmic ray list, and to the known star
+list, to establish the measurements that best separate the cosmics
+from stellar cores.  Development of these query tools, and assessment
+of the important distinguishing features, is an outstanding
+development task.
+
+After masking and coaddition, the visit Exposure is created.  The
+combined Exposure will have an exposure time equivalent to the sum of
+the two input Snaps (i.e. this will {\it not} be an average image).
 The FITS keywords that need to be modified in this process include:
 {\bf XXX}.  The FITS keywords that will {\it not} be modified in this
 process, but that do reflect metadata that are different between the
@@ -306,41 +324,40 @@ done before.
 
 \subsection{Issues}
 
-We need to determine if this is a viable place to test out the
-delta--function basis set.
+-- The cores of bright (but not saturated) stars show up as residuals
+in the Snap image difference.
 
-We have not explored thoroughly the set of measurements that come from
-the snap difference (efficiency and purity), and which are used to
-mask pixels.
+-- We do not currently have tools to access the list of cosmic rays
+that were input to an image (locations, shapes and amplitudes).
 
-We do not know exactly how to obtain the list of cosmic rays that were
-input (locations, shapes and amplitudes).
+\subsection{New Development Tasks}
 
-\subsection{New Developments}
 
-We need code to reliably distinguish cosmic rays from the cores of
-bright stars.
+-- Develop tools to compare Snap DiaSources with the known cosmic ray
+list, and the known star list.
 
-We need code to associate SnapCombine measurements with known cosmic
-rays, and with the known locations of stars.
+-- Develop cuts on measurement features to distinguish cosmics from
+stellar cores in the Snap DiaSources.
 
-The reference catalog needs to have time--dependent entries.
+-- Establish the size of the sum--of--Gaussian basis set for SnapPsfMatchTask.
+
+-- The reference catalog needs to have time--dependent entries.
 
 \subsection{Tuning Parameters}
 
-The type of basis set (sum--of--Gaussian or delta--function) used to
-perform the SnapPsfMatchTask.
+-- The type of basis set (sum--of--Gaussian or delta--function) used
+to perform the SnapPsfMatchTask.
 
-The size of the sum--of--Gaussian basis set if it is used.
+-- The size of the sum--of--Gaussian basis set (if it is used).
 
-\subsection{Metrics and Testing}
+\subsection{Metrics and Testing Tools}
 
-To determine how well we are detecting cosmic rays, we will
+-- To determine how well we are detecting cosmic rays, we will
 cross--match the list of masked pixels with the cosmic ray list, and
-with the known star list.  We will calculate the efficiency () and
-purity () of this sample as metrics to optimize.
-
-\subsection{Tools}
+with the known star list.  The measured features of these two samples
+will be compared against each other to find the most distinguishing
+characteristics.  We will calculate the efficiency and purity of this
+sample as metrics to optimize.
 
 %%%%%%%
 
@@ -362,7 +379,6 @@ makeSkyMap creates a sky map in the output repository.
 A repository may have two sky maps: one for "deep" coadds and one for "goodSeeing" coadds.
 
 \subsection{Issues}
-
 DodecaSkyMap has large tracts which have significant distortion at the edges.
 We don't believe this will be an issue for image differencing because the template is warped
 to match the science exposure before subtracting. If it does prove to be a problem
@@ -372,7 +388,7 @@ SkyMap unpersistence has been a bit troublesome due to pickling pex\_config fiel
 When pex\_config changes sometimes this breaks SkyMap unpersistence. We must fix this eventually.
 I don't think it's a high priority, but we could try to fix it in time for late Winter2012 production.
 
-\subsection{New Developments}
+\subsection{New Development Tasks}
 
 None. If we do decide to switch to HealpixSkyMap then we must make healpy an LSST package.
 Healpy is self-contained other than needing cfitsio.
@@ -399,13 +415,10 @@ will be to slightly increase storage requirements of coadds and slightly increas
 the time required to generate them. We will not see either effect in late Winter2012
 because we are only working with a small region on the sky.
 
-\subsection{Metrics and Testing}
+\subsection{Metrics and Testing Tools}
 
-No testing is required.
-
-\subsection{Tools}
-
-Skymap examples/plotSkyMap prints out useful information about a sky map and displays a 3d graph of it.
+No testing is required.  Skymap examples/plotSkyMap prints out useful
+information about a sky map and displays a 3d graph of it.
 
 %%%%%%%
 
@@ -441,48 +454,47 @@ based on criteria such as PSF FWHM and sky background. It operates by
 querying the Science_Ccd_Exposure table of a database of information about calexp.
 
 \subsection{WarpAndPsfMatchTask subTask} \becker
+
 This subTask first undertakes the Psf--matching of the input {\tt
-  calexp} to that desired for the Coadd.  It then astrometrically
-warps this Psf--matched to the astrometric footprint of the Coadd.
-The Psf--matching happens through the ModelPsfMatchTask subTask.  This
-differs from ImagePsfMatchTask, described in detail in
+  calexp} Psf to that desired for the Coadd.  It then astrometrically
+warps this Psf--matched image to the astrometric footprint of the
+Coadd.  The Psf--matching happens through the ModelPsfMatchTask
+subTask.  This differs from ImagePsfMatchTask, described in detail in
 Section~\ref{sec-imagedifftask}, in one major detail.  In this case,
-the {\tt calexp's} {\it model} Psf is taken from the butler, and
+the {\tt calexp's} {\it model} Psf is read through the butler, and
 compared to the idealized Psf that we wish to realize for the Coadd.
-Each Psf is realized in a grid of $x,y$ positions around the {\tt
-  calexp} to account for spatial variation of the {\tt calexp} Psf
-(the Coadd Psf model will not be designed to vary).  This will be
-entered into a KernelCandidate, which it itself entered into a
+Each Psf is realized in a grid of $x,y$ positions to account for
+spatial variation of the {\tt calexp} Psf (the Coadd Psf model is
+designed to not vary).  The two Psfs will be entered into a
+KernelCandidate as Images, which it itself entered into a
 SpatialCellSet, and sent along to the fitting code where the
 functionality is again the same as ImagePsfMatchTask.  Because the
-concept of ``variance'' is nebulous when comparing model--to--model,
-all sigma clipping is turned off and the variance is assumed to have a
-constant weight.
-
+concept of ``variance'' is ill--defined when comparing
+model--to--model, all sigma clipping is turned off and the variance is
+assumed to have a constant weight.
 
 There is trade--off in this process that needs to be explored in
-detail.  First--off, we define the dimensions of the {\tt calexp} Psf
-as $P \times P$, the FWHM of the Coadd Psf as $C$, and the dimensions
-of the Psf--matching kernel as $K \times K$.  When fitting for the
-matching Kernel, each Psf image gets convolved with the Kernel basis
-functions, trimming $K//2$ pixels off of each side due to EDGE
-effects.  Thus the final number of pixels we have to constrain the
-Kernel coefficients are $(P-K) \times (P-K)$.  This means that as the
-Kernel gets larger, the number of pixels we have to constrain the
-solution gets smaller, and the solution may become unstable.
-Providing tension in the other direction is that if the kernel
-dimensions too small, to the extent that $P//2 < n \times C$ (i.e. its
-smaller than say $n=3$ times the FWHM of the Psf you are matching to),
-the kernel stamp is not large enough to capture all the power needed
-to match to that large of a FWHM.  This ends up yielding ``boxy''
+detail during W13.  To illustrate this, we define the dimensions of
+the {\tt calexp} Psf as $P \times P$, the FWHM of the Coadd Psf as
+$C$, and the dimensions of the Psf--matching kernel as $K \times K$.
+When fitting for the matching Kernel, each Psf image gets convolved
+with each Kernel basis function, trimming $K//2$ pixels off of each
+side due to EDGE effects.  Thus the final number of pixels we have to
+constrain the Kernel coefficients are $(P-K) \times (P-K)$.  This
+means that as the Kernel gets larger, the number of pixels we have to
+constrain the solution gets smaller, and the solution may become
+unstable.  Providing tension in the other direction is that if the
+kernel dimensions are too small compared to $C$, the kernel stamp is
+not large enough to capture all the power needed to match to that
+large of a FWHM.  This ends up yielding ``boxy'' stars in the
 Psf--matched images.  Ultimately, we are limited by the dimensions of
 the {\tt calexp} Psf model $P$, which in turn sets the maximum size of
 the kernel such that $(P-K) \times (P-K)$ provides sufficient ability
 to constrain all of the Kernel basis coefficients, which in turn sets
-the size of the Psf we may match to ($C = P//2 / n$) without
-sufficiently impacting the shapes of the stars.  This trade--off,
-including the definitions of ``sufficient'' above, have not been
-explored in thorough detail.
+the size of the Psf $C$ we may match to without sufficiently impacting
+the shapes of the stars.  This trade--off, including the definitions
+of ``sufficient'' above, will be explored in thorough detail in W13
+pre--production.
 
 When choosing the desired FWHM of the Coadd, we will use the
 distribution of FWHM of the input data.  Typically this comes from the
@@ -496,43 +508,65 @@ detail.
 
 \subsection{Issues}
 
-Science images are presently Psf--matched to a model that is constant in pixel space.
+-- Science images are presently Psf--matched to a model that is constant in pixel space.
 However, we want to match to a model PSF that is constant on the sky. We worry that the
 distortion near the edge of the LSST's field of view may be large enough
 that this distinction will prove significant. Jim Bosch is working on code
 that will eliminate this issue by allowing us to warp model PSFs.
 However, it is likely that we will produce some preliminary data before this new code is ready.
 
-We have not explored the trade--offs between Psf dimensions, matching
-kernel dimensions, and the FWHM of the Psf we may match to.
+-- If the model--to--model Psf--matching kernel is too big, we have
+too few pixels to constrain the solution.
 
-We do not have color-dependent Psfs.  This will be minimized by
-analysis of $i$--band data, and explored in analysis of $g$--band
-data.
+-- If the model--to--model Psf--matching kernel is too small, it
+limits the FWHM of the desired Psf of our coadd (otherwise the stars
+become boxy on the scale of the kernel).
 
-We need to understand ``how much'' deconvolution the code can handle,
+-- If there is a limitation on the FWHM of the coadd Psf, we are
+limited in the number of images we may use with (FWHM$_i$ $<$
+FWHM$_{Coadd}$), impacting our final depth.
+
+-- If we wish to increase our depth and include images in the coadd
+with (FWHM$_i$ $>$ FWHM$_{Coadd}$), we will have to deconvolve.
+
+-- We need to understand ``how much'' deconvolution the code can handle,
 both in terms of the fraction of images that were deconvolved, and the
 degree to which each of the images is deconvolved.
 
-The {\tt meas\_mosaic}, which is a port of HSC's \"{u}ber cal, is
-necessary to correct known deficiencies in LSST's {\tt meas\_astrom}
-package.  This has proven necessary for creation of non--smeared
-coadded images, reducing the RMS of the astrometric fit by a factor of
-two.  This is leading to an additional systematic component equivalent
-to {\bf XXX} in coadded images, and will vary spatially.
+-- We do not have color-dependent Psfs.  This will be minimized by
+analysis of $i$--band data, and explored in analysis of $g$--band
+data.
 
-\subsection{New Developments}
+-- The process of Psf--matching first, and then warping to the Coadd
+footprint, may fail to represent the true shape of the Coadd Psf (in
+pixel space) near the edges of tracts.
 
-We want to be able to warp model PSFs, to improve the quality of our PSF matching.
+-- The {\tt meas\_mosaic} package, which is a port of HSC's \"{u}ber
+cal, is necessary to correct known deficiencies in LSST's {\tt
+  meas\_astrom} package.  This has proven necessary for creation of
+non--smeared coadded images, reducing the RMS of the astrometric fit
+by a factor of two.  This is leading to an additional systematic
+component equivalent to {\bf XXX} in coadded images, and will vary
+spatially.
 
-The current Science_Ccd_Exposure table and SelectImagesTask need improvement.
+\subsection{New Development Tasks}
+
+-- Investigate the trade--offs between Psf size, kernel size, and FWHM
+of the Coadd.
+
+-- Establish how the Psf, depth, and variance of the coadd respond to
+the amount of deconvolution, both in terms of the number of
+deconvolved images, and the degree of deconvolution.
+
+-- We want to be able to warp model PSFs, to improve the quality of our PSF matching.
+
+-- The current Science_Ccd_Exposure table and SelectImagesTask need improvement.
 The only measure of image quality that Science_Ccd_Exposure contains is PSF FWHM.
 We would like additional information such as PSF ellipticity, airmass and sky brightness.
 In addition, we plan to develop an equation that computes a single measure of quality
 based on these various bits of information.
 
 \subsection{Tuning Parameters}
-
 We will need to test the following Psf--matching configs:
 \begin{itemize}
 \item Psf size (set in processCcd)
@@ -544,14 +578,19 @@ We will need to test the following Psf--matching configs:
 We will need to tune our image selection criteria (possibly including our image quality metric)
 to select suitable images.
 
-\subsection{Metrics and Testing}
+\subsection{Metrics and Testing Tools}
 
-It would be nice to be able to evaluate how well the new image quality metric
+-- Establish the stability of the model--to--model Psf--matching
+kernel as a function of Psf dimension and Kernel dimension by tracking
+the condition number of the solution.
+
+-- The Psf shape, noise properties, and photometric depth of the coadd
+will be used to determine the impacts of deconvolution.
+
+-- It would be nice to be able to evaluate how well the new image quality metric
 works. That would allow us to improve the metric. However, we expect this equation
 to have a fairly shallow minimum and to not be easily testable, so we may well end up
 with heuristic that seems to be good enough.
-
-\subsection{Tools}
 
 %%%%%%%
 
@@ -575,7 +614,7 @@ This includes zeropoints, sky background, Psf FWHM.
 
 Flux scaling (2-d spline)
 
-\subsection{New Developments}
+\subsection{New Development Tasks}
 Spreading of Mask bits.  
 
 How do we define the selection criteria, and select, input and
@@ -588,9 +627,7 @@ Flux scaling (2-d spline)
 
 \subsection{Tuning Parameters}
 
-\subsection{Metrics and Testing}
-
-\subsection{Tools}
+\subsection{Metrics and Testing Tools}
 
 %%%%%%%
 
@@ -614,15 +651,14 @@ and measurement on the template image, yielding at a minimum the {\tt
 
 \subsection{Issues}
 
-\subsection{New Developments}
+\subsection{New Development Tasks}
 Create zeropoint, Psf, and Wcs of coadd for QA, but do not overwrite
 extant ones.
 
 \subsection{Tuning Parameters}
 
-\subsection{Metrics and Testing}
+\subsection{Metrics and Testing Tools}
 
-\subsection{Tools}
 Means to compare fitted zeropoint, Psf, and Wcs of coadd with the
 design specs.
 
@@ -800,7 +836,7 @@ case that the science data have a narrower FWHM.  Alternately, we need
 to understand the impacts of convolving the science image on the depth
 we may detect to in the difference image.
 
-\subsection{New Developments}
+\subsection{New Development Tasks}
 We need to evaluate the number of bases needed, using e.g. the
 Bayesian Information Criterion, as a function of Psf FWHM and
 variation.
@@ -852,7 +888,7 @@ interpolation.  We need to use decide on the necessary spatial order
 for this polynomial $N$.  A stretch goal will be to implement Gaussian
 processes (kriging).
 
-\subsection{Metrics and Testing}
+\subsection{Metrics and Testing Tools}
 
 Important metrics that will be exercised pre--production include: the
 use of the BIC to determine the complexity of the kernel basis; an
@@ -863,7 +899,6 @@ In production our core metrics will include: what are the residuals of
 a control sample of stars after application of the Psf--matching
 kernel.
 
-\subsection{Tools}
 Several debugging hooks have been implemented in {\tt ip\_diffim} for
 the visualization of the inputs and outputs to ImageDifferenceTask.
 What remains to be done is to turn these into pipeQA tests; currently
@@ -876,10 +911,9 @@ no metrics querying the DiaSources exist.
 
 \subsection{Input/Outputs}
 \subsection{Issues}
-\subsection{New Developments}
+\subsection{New Development Tasks}
 \subsection{Tuning Parameters}
-\subsection{Metrics and Testing}
-\subsection{Tools}
+\subsection{Metrics and Testing Tools}
 
 %%%%%%%
 
@@ -887,6 +921,8 @@ no metrics querying the DiaSources exist.
 \section{Summary} \becker
 
 \subsection{Tall Poles}
+
+-- Derive techniques to distinguish cosmic rays from the cores of stars in SnapCombine
 
 
 %%%%%%%
@@ -939,6 +975,11 @@ Database Ingest               & 10$^{-X}$ sec & Rows         & XXX             &
 \subsection{ProcessCcdTask}
 \begin{python}
 processCcd.py
+
+--config
+snapCombine.diffim.kernel=''DF''
+snapCombine.doSimpleAverage=False
+snapCombine.doPsfMatch=True
 \end{python}
 
 
@@ -959,6 +1000,10 @@ skyMap.active.tractOverlap=3.5
 \subsection{MakeCoaddTempExpTask} 
 \begin{python}
 makeCoaddTempExp.py
+
+--config
+coaddKernelSizeFactor=3.0
+warpAndPsfMatch.psfMatch.kernel=''AL''
 \end{python}
 
 \subsection{AssembleCoaddTask} 
