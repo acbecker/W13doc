@@ -181,7 +181,7 @@ of work before it can be submitted for review.
 %%%%%%%
 
 \clearpage 
-\section{CreateCalibrationProductsTask} \simon
+\section{CreateCalibrationProductsTask} 
 This work has not yet been completed.  This section is to outline the processing and needed work.  
 The purpose of this task is to take individual calibration frames and combine them into
 high signal to noise master frames.  Examples will be: masterbias, masterdark, masterflat, etc.  
@@ -214,14 +214,12 @@ This task is relatively straight forward for the calibration products we are cur
 to address any implementation issues.
 
 
-\subsection{CalibProcessTask}
-
 %%%%%%%
 
 \clearpage 
-\section{ProcessImageTask} 
-The ProcessCcdTask is does the work required to take input data from raw form all the way to a calibrated and
-photometered science image.  This task is subclassed with camera specific configs and processing, but the overall 
+\section{ProcessCcdTask\label{processccdsec}} 
+The ProcessCcdTask does the work required to take input data from raw form all the way to a calibrated and
+photometered science image.  The ProcessImageTask task is subclassed with camera specific configs and processing, but the overall 
 work flow is first to do the instrument signature removal step which is handled by the camera specific subclass.  For imSim
 data, there is an additional step of combining the individual snap images before the rest of processing happens. Next calibration
 is run.  This measures the PSF and aperuture correction, and also does the photometric and astrometric calibration.  
@@ -239,7 +237,7 @@ Inputs are:
 
 Outputs are:
 \begin{itemize}
-\item Metadata for ingest
+\item Exposure metadata for ingest (bboxes, zeropoints, etc.)
 \item Src for ingest
 \item Calexp for input to {\tt ip\_diffim}
 \item Background to add to Calexp for {\tt ip\_diffim}
@@ -355,14 +353,14 @@ essentially all steps were necessary in later processes.  The one possible excep
 are needed by forced photometry, zeropoints (CalibrateTask)
 are needed by pipeQA and makeCoaddTask, and detection planes (DetectTask) are needed by the background matching tasks.
 
-{\bf imSim IsrTask}
+{\bf imSim IsrTask}\\
 -- Saturation detection is done before bad pixel masking because we have the pixel masks in CCD coordinates.
 This meant that some bad pixels were also marked as SAT.  We fix this by changing all SAT+BAD pixels back to just BAD.
 
 -- The flats had per chip normalizations meaning that the zeropoint was not fixed for the focalplane.  This should be
 fixed by the new calibration products task
 
-{\bf SnapCombineTask}
+{\bf SnapCombineTask}\\
 -- The cores of bright (but not saturated) stars show up as residuals
 in the Snap image difference.
 
@@ -371,7 +369,7 @@ that were input to an image (locations, shapes and amplitudes).
 
 \subsection{New Development Tasks}
 
-{\bf SnapCombineTask}
+{\bf SnapCombineTask}\\
 -- Develop tools to compare Snap DiaSources with the known cosmic ray
 list, and the known star list.
 
@@ -380,7 +378,7 @@ stellar cores in the Snap DiaSources.
 
 -- Establish the size of the sum--of--Gaussian basis set for SnapPsfMatchTask.
 
-{\bf Reference Catalog}
+{\bf Reference Catalog}\\
 We already have a stars only reference catalog for the entire area
 covered by the W13 ImSim area.  
 
@@ -411,18 +409,19 @@ done before.
 -- Make a task to generate the astrometry.net indexes and on disk reference catalog.
 
 \subsection{Tuning Parameters}
-{\bf snapCombineTask}
+{\bf snapCombineTask}\\
 -- The type of basis set (sum--of--Gaussian or delta--function) used
 to perform the SnapPsfMatchTask.
 
 -- The size of the sum--of--Gaussian basis set (if it is used).
 
-{\bf CalibrateTask}
+{\bf CalibrateTask}\\
 -- background grid size -- There are several of these in the config
   so we should understand what each one does
+
 -- aperture size for aperture corrections -- the default is too small
 
-{\bf DeblendTask}
+{\bf DeblendTask}\\
 -- deblending radius
 
 {\bf MeasurementTask}
@@ -710,33 +709,51 @@ Flux scaling (2-d spline)
 %%%%%%%
 
 \clearpage 
-\section{ProcessCoaddTask} \simon
+\section{ProcessCoaddTask} 
+We will be running calibration, detection and measurement on coadds to 
+generate the data products necessary for QA and also to measure the PSF
+for matching science images to the template.
 
-To optimize the basis shapes matching the template image to a science
-image, we require the Psf of the template image.  This level of
-template processing also allows us to undertake QA to determine if the
-realized shape of the Psf matches the specifications it was designed
-to, if the astrometry of the template matches the SkyMap it was
-designed to, and if there is any brightness dependence of the Psf by
-looking at the measured brightness of reference catalog stars in the
-template.  This essentially requires that we run calibrate, detection
-and measurement on the template image, yielding at a minimum the {\tt
-  Psf} and {\tt Source} products.
+With the outputs of the process coadd task we can also answer questions like:
+\begin{enumerate}
+\item Does the measured shape of the PSF match the input model PSF to which the template was matched?
+\item Does astrometry of the template match the SkyMap?
+\item How does the PSF change with position, source flux, etc.?
+\end{enumerate}
 
-\subsection{Input/Outputs}
+\subsection{Inputs}
+\begin{itemize}
+\item Coadd exposure
+\end{itemize}
+
+\subsection{outputs}
+\begin{itemize}
+\item Coadd calexp
+\item Coadd exposure metadata
+\item Background model
+\item PSF model
+\item Source catalog
+\end{itemize}
 
 \subsection{Calibrate/Detect/Measure subTasks}
+These are identical to those mentioned in \S \ref{processccdsec}.
 
 \subsection{Issues}
+\begin{itemize}
+\item What is the optimal grid for background estimation
+\item Deblending radius
+\item Use image variance or per pixel variance
+\item Measurement with color dependent PSF
+\end{itemize}
 
 \subsection{New Development Tasks}
-Create zeropoint, Psf, and Wcs of coadd for QA, but do not overwrite
-extant ones.
+There is no notion of persisting models for QA purposes alone.  For example we will want to persist
+the WCS we measure, but only for comparing to the skymap WCS.  In other words, we do not want to replace the 
+WCS but we do want to measure it.
 
 \subsection{Tuning Parameters}
 
 \subsection{Metrics and Testing Tools}
-
 Means to compare fitted zeropoint, Psf, and Wcs of coadd with the
 design specs.
 
@@ -1000,7 +1017,7 @@ the visualization of the inputs and outputs to ImageDifferenceTask.
 %%%%%%%
 
 \clearpage 
-\section{Database Ingestion} \simon
+\section{Database Ingestion} 
 This step is essentially a set of by hand operations.  I have hear rumors of
 a generic sourceIngestTask, but have not used it.  This is only one aspect of the
 database ingestion, however.  The steps for the different phases of ingestion will be:
@@ -1025,13 +1042,24 @@ database ingestion, however.  The steps for the different phases of ingestion wi
 
 \subsection{Issues}
 -- This needs to be taskified and made so that it can be parallelized
+
 -- There is some parallel capability, but it is largely by hand.
+
 -- If a parallel ingestion scheme is used, the tables need to be merged and indexed which can take a long time
 
-\subsection{New Development Tasks}
-\subsection{Tuning Parameters}
-\subsection{Metrics and Testing Tools}
+-- There are also several ways to do this (create CSVs and load on NCSA vs. ingest over the wire at run time)
 
+-- Logging is done purely by printing to stdout, so it is possible to miss failures.
+
+\subsection{New Development Tasks}
+Taskify and unify this process.  In particular, streamlining the parallel process is a must if data volumes are $>$ 10E8 rows.
+
+\subsection{Metrics and Testing Tools}
+\begin{itemize}
+\item Tool to monitor ingestion rate (and predict finish time?).
+\item Tool for determining missing data/failures
+\item Tool for streamlining the merge process after parallel ingest.
+\end{itemize}
 %%%%%%%
 
 \clearpage 
