@@ -5,6 +5,8 @@
 \usepackage{titletoc}
 \usepackage{color}
 \usepackage{graphicx}
+\usepackage{rotating}
+
 \usepackage[toc,page]{appendix}
 
 % HOW TO SET UP AN 8.5 x 11:
@@ -60,16 +62,16 @@ cosmic rays; in the matching of input images for a Psf--matched
 template; and in the subtraction of this template from individual
 science Exposures.
 
-The input data will be simulated LSST images (ImSim); stretch goals
-include application of the algorithms to SDSS Stripe82 data (S82).
-The processing steps for the ImSim data include: application of the
-Isr pipeline; combining the two Snaps in a Visit into a single
-Exposure; calibration, detection, and measurement on the Exposure;
-stacking of multiple Exposures into a Psf--matched template image;
-subtraction of this template from single--epoch Exposures; detection,
-measurement, and characterization of DiaSources that remain in the
-difference image; and ingestion of these DiaSources into a MySQL
-database.  The natural QA hooks are in the assessment of the
+The input data will be subsets of the simulated LSST images (ImSim);
+stretch goals include application of the algorithms to SDSS Stripe82
+data (S82).  The processing steps for the ImSim data include:
+application of the Isr pipeline; combining the two Snaps in a Visit
+into a single Exposure; calibration, detection, and measurement on the
+Exposure; stacking of multiple Exposures into a Psf--matched template
+image; subtraction of this template from single--epoch Exposures;
+detection, measurement, and characterization of DiaSources that remain
+in the difference image; and ingestion of these DiaSources into a
+MySQL database.  The natural QA hooks are in the assessment of the
 Psf--matched template, and in the purity of the DiaSource sample.  We
 will focus on the following metrics to assess the production:
 \begin{itemize}
@@ -77,8 +79,8 @@ will focus on the following metrics to assess the production:
 \item rate of missed detections
 \item performance (computational and I/O)
 \end{itemize}
-This document outlines the details of each stage of production,
-including estimates of compute time, and addresses the anticipated
+This document outlines the details of each stage of production, 
+including estimates of compute time and required development, and addresses the anticipated
 Configs for each Task.
 
 \clearpage
@@ -87,64 +89,145 @@ Configs for each Task.
 
 %%%%%%%
 
+\begin{sidewaysfigure}
+\includegraphics[width=\textwidth]{Figures/Winter_2013.png}
+\caption{Flow of primary information in difference imaging. Brown
+  boxes are input data, blue boxes represent the database, yellow
+  represent ingestion into the database. Grey-brown boxes are derived
+  data and yellow-green boxes are the individual pipeline tasks (applications
+  that exist but not in the form of pipeline tasks are shown in pink).}
+\label{flow}
+\end{sidewaysfigure}
+
 \clearpage 
-\section{ImSim Input Data} \ajc
+<<<<<<< Updated upstream
 
-The sets of simulated images produced for Summer 2012 (which will be
-the inputs for Winter 2013 late production) are described at \\{\tt
-  http://dev.lsstcorp.org/trac/wiki/ImSim/Summer2012Plan}.  Processing
-of SDSS Stripe82 data is a stretch goal for Winter 2013 production.
+\section{Simulated data} 
 
-We wish to explore the capabilities of the image subtraction software
-across the focal plane, and as a function of wavelength (both of the
-sources and of the effective filter).  The former argues for
-operations on (at a minimum) full quadrants of the focal plane, as
-vignetting is known to attenuate the signal in the outer rafts.  The
-latter argues for the analysis of observations in multiple passbands:
-one band where chromatic effects are expected to be negligible
-($i$--band) and one where the chromatic effects are expected to be
-substantial ($g$--band).
+Three sets of simulated data are available for use in development of
+difference imaging (5yr, Wide, and Deep). These are described in
+detail at {\tt
+  http://dev.lsstcorp.org/trac/wiki/ImSim/Summer2012Plan}.
+Development of the LSST algorithms for Winter 2013 will focus on
+subsets of the 5yr data, which comprise 2369 visits (full focal plane)
+of 5 adjacent fields observed over a 5-year period in the full suite
+of filters. All fields are dithered (spatially and rotationally), with the
+spatial dithering defined with a minimum and maximum dither size of
+XXX and 1.75 degrees respectively. Rotational dithering is based on
+{\it rottelpos} (the angle of the camera with respect to the
+telescope) as given by OpSim 3.61.
 
-The ImSim {\tt 5yr Run} simulated 2500 visits (full focal plane) of 5
-adjacent fields over a 5-year period in the full suite of filters.
-The simulations include both rotational and pointing dithering, and
-the atmosphere includes no clouds or aerosols.  We will extract all of
-the $i$--band data of the central field for a baseline study of the
-image subtraction algorithms.  The $i$--band data will serve as a
-reference set that maps out the underlying performance of the
-algorithms in a regime where differential chromatic refraction (DCR)
-within the bandpass is expected to be negligible.  The baseline spec
-will be to generate a template image from the coaddition of the first
-half of these data, with the appropriate cuts on conditions and
-quality.  The second half of these data will be differenced with this
-template, and the quality of the subtractions analyzed based on the
-metrics above.  There are {\bf XX} $i$--band images of the central
-field.
+The depth maps derived from the positions of the 5yr data (including
+dithers) for the $g$ (176 visits) and $i$ (466 visits) passbands are
+shown in Figure~\ref{depth}. All observations are photometric with no
+variation in transmission due to clouds. The airmass, sky brightness
+and seeing associated with these pointings are given in
+Figure~\ref{airmass}. Based on these distributions, the selections on
+airmass and time described below all result in data sets of at least
+20 visits (equivalent to one year of observations).
 
-We will step through several sub--production runs to assess the
-quality of the processing.  This includes sub--productions runs in the
-following configurations:
-\begin{itemize}
-\item Images in $i$-band at low airmass to avoid the effects of DCR
-\item Images in $i$-band over a short timescale to avoid proper motion effects
-\end{itemize}
+\begin{figure}
+\centerline{
+\includegraphics[width=0.4\textwidth]{Figures/depth_g.png}\hfil
+\includegraphics[width=0.4\textwidth]{Figures/depth_i.png}
+}
+\caption{The pointing depth map (including dithers) for the 5yr data for the g (left panel)
+ and i (right panel)  passbands.}
+\label{depth}
+\end{figure}
 
-The second portion of production will move to the analysis of data in
-the $g$--band, where DCR within the passband is expected at the scale
-of the Psf.  This will inform future specifications for
-color--dependent Psf--modeling and Psf--matching kernels.  There are
-{\bf XX} $g$--band images of the central field.
 
-Data will be prepared at various locations and stored at JHU with
-images brought over as needed.  We can use standard grid copy tools
-(gridftp, bbcp).  Before large runs start, the data will need to
-staged at the compute center.  The estimated time of transfer is
-(We'll need to benchmark this) demonstrated rate of {\bf XXX b/s} and
-ImSim data volume of {\bf XXX GB} results in transfer time of {\bf
-  XXX} days.  The registry generation time is ~10min per visit.  We
-will need to solve the problem of how to point to the correct flat in
-the registry given a rotator angle for the science image.  This has
-not been done before.
+\begin{figure}
+\centerline{
+\includegraphics[width=0.3\textwidth]{Figures/airmass_mjd.png}\hfil
+\includegraphics[width=0.3\textwidth]{Figures/sky_mjd.png}\hfil
+\includegraphics[width=0.3\textwidth]{Figures/seeing.png}
+}
+\caption{The airmass, sky brightness, and seeing as a function of MJD for the
+  5yr data in the g (blue points) and i (red points) passbands.}
+\label{airmass}
+\end{figure}
+
+To evaluate the capabilities of the image subtraction software across
+the focal plane, and as a function of wavelength (both of the sources
+and of the effective filter) argues for operations on, at a minimum,
+full quadrants of the focal plane (as vignetting attenuates the signal
+in the outer raft) and the analysis of observations in multiple
+passbands (one band where chromatic effects are expected to be
+negligible ($i$--band) and one where the chromatic effects are
+expected to be substantial ($g$--band).
+
+We accomplish this with a series of data sets drawn from the 5yr
+simulations. We define a baseline data as the central CCD, in the $i$
+band, at low airmass, and for a coherent set of observations (spread
+over 30 days).  This will serve as the reference set that maps out the
+performance of the algorithms relative to the optical design of the
+LSST and variations in atmospheric seeing. Subsequent subsets of the
+simulated data will address the dependence of the image differencing
+on position on the focal plane, color, wavelength, time interval
+between exposures, differential chromatic refraction, and high proper
+motion sources. 
+%1% in quadrature at 5 sigma
+
+Figure~\ref{DCR} shows the differential chromatic refraction (DCR) as
+a function of airmass (referenced to a G5V star) for a series of stars
+ranging from O6 to M8. For main sequence stars in the current
+simulated images, we expect the DCR shifts in the $i$ band to be
+$<$0.1 pixels for airmass 1.3 and lower and $<$0.05 pixels for
+airmasses less than 1.15. The corresponding DCR values for the $g$
+band are $<$0.6 pixels and $<$0.4 pixels respectively. Baseline runs
+will, therefore, be defined in the $i$--band at airmass $<$1.15.
+
+
+
+\begin{figure}
+\centerline{\includegraphics[width=0.8\textwidth]{Figures/DCR_R_stars.png}}
+\caption{The differential chromatic diffraction relative to a G5V star
+  as a function of airmass. The left panel shows the positional offset
+  for the $g$ band and the right panel the $i$ band. In both panels
+  the stars range in spectral type from O6 to M8.}
+\label{DCR}
+\end{figure}
+
+
+\begin{table}
+\begin{tabular}{llcrrr}
+Sample & Device & Filter & Exposures & airmass & time interval \\
+\hline  
+Baseline CCD             & central         & $i$  & 20 & $<$1.15 &$<$30 days \\
+Baseline Raft              & central raft  & $i$  & 20 & $<$1.15 &$<$30 days \\
+Baseline Focal Plane   & focal plane  &  $i$ & 20 & $<$1.15 &$<$30
+days \\
+\hline  
+Color CCD             & central         & $g$  & 20 & $<$1.15 &$<$30 days \\
+Color Raft              & central raft  & $g$  & 20 & $<$1.15 &$<$30 days \\
+Color Focal Plane   & focal plane  &  $g$ & 20 & $<$1.15 &$<$30 days \\
+\hline 
+Time CCD             & central         & $i$  & 20 & $<$1.15 &$>$3 years \\
+Time Raft              & central raft  & $i$  & 20 & $<$1.15 &$>$3 years \\
+Time Focal Plane   & focal plane  &  $i$ & 20 & $<$1.15 &$>$3 years \\
+\hline 
+DCR CCD             & central         & $g$  & 20 & $>$1.3 &$<$30 days \\
+DCR Raft              & central raft  & $g$  & 20 & $>$1.3 &$<$30 days \\
+DCR Focal Plane   & focal plane  & $g$  & 20 & $>$1.3 &$<$30 days
+\end{tabular}
+\end{table}
+
+
+All specified data are currently stored at NCSA.  Special purpose runs
+can and will be undertaken as needed using the Google resources and
+will be staged at JHU and then transferred to NCSA.  Registry
+generation time is ~10min per visit.  
+
+Processing of SDSS Stripe82 data is a stretch goal for Winter 2013
+production.
+
+{\bf MOVE TO TO ISR}
+
+
+We will need to solve the
+problem of how to point to the correct flat in the registry given a
+rotator angle for the science image.  This has not been done before.
 
 We will be applying overscan correction, bias correction and flat
 fielding to the ImSim data.  The dark current in the models is below
