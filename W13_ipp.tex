@@ -241,7 +241,7 @@ different:
 -- First the spatial order of the matching kernel is set to 0,
 indicating a constant matching kernel across the image.  {\it For this
   reason we will be testing the delta--function kernel basis set in
-  this environment}.  The delta--function kernel set is more sensntive
+  this environment}.  The delta--function kernel set is more sensitive
 to noise than sum--of--Gaussian basis sets, but better able to model
 fractional pixel shifts without significant shape distortions.  The
 zero--order spatial model will help to regularize the overfitting
@@ -265,7 +265,7 @@ the signal (cosmic rays) from the noise (the most significant
 contaminant are the cores of bright stars).  We currently do {\it not}
 have tools to reliably distinguish true cosmic rays from the cores of
 bright stars in these snap differences; thus this is a core
-developmennt task for W13 processing.  We will compare the Snap
+development task for W13 processing.  We will compare the Snap
 DiaSource lists to the known cosmic ray list, and to the known star
 list, to establish the measurements that best separate the cosmics
 from stellar cores.  Development of these query tools, and assessment
@@ -386,7 +386,7 @@ we can switch to using HealpixSkyMap with smaller tracts.
 
 SkyMap unpersistence has been a bit troublesome due to pickling pex\_config fields.
 When pex\_config changes sometimes this breaks SkyMap unpersistence. We must fix this eventually.
-I don't think it's a high priority, but we could try to fix it in time for late Winter2012 production.
+I don't think it's a high priority, but we could try to fix it in time for late Winter2013 production.
 
 \subsection{New Development Tasks}
 
@@ -412,7 +412,7 @@ Image differencing should not be sensitive to these parameters.
 
 The overlap between tracts may be larger than necessary, but the main effect of that
 will be to slightly increase storage requirements of coadds and slightly increase
-the time required to generate them. We will not see either effect in late Winter2012
+the time required to generate them. We will not see either effect in late Winter2013
 because we are only working with a small region on the sky.
 
 \subsection{Metrics and Testing Tools}
@@ -526,7 +526,7 @@ spatially.
 \subsection{New Development Tasks}
 
 -- Investigate the trade--offs between Psf size, kernel size, and FWHM
-of the Codd.
+of the Coadd.
 
 -- Establish how the Psf, depth, and variance of the coadd respond to
 the amount of deconvolution, both in terms of the number of
@@ -628,128 +628,126 @@ design specs.
 \section{ImageDifferenceTask \label{sec-imagedifftask}} \becker
 
 The ImageDifferenceTask subtracts a template image that is
-Psf--matched to the Psf of an input science image, from that science
-image.  The residuals (the image difference, or difference image) will
-contain only those objects that have varied in position or brightness
-w.r.t. the template.  Detection and measurement will be run on the
-difference image to characterize the residuals, both at positive and
-negative polarity, and persisted as DiaSources.
+Psf--matched to an input science image, from that science image.  The
+image difference (or difference image) will contain only those objects
+that have varied in position or brightness w.r.t. the template.
+Detection and measurement will be run on the difference image to
+characterize the residuals, both at positive and negative polarity,
+and persisted as DiaSources.  This is implemented via a series of
+subTasks: ImagePsfMatchTask, SourceDetectionTask, SourceDeblendTask,
+SourceMeasurementTask.
 
-In detail, an input {\tt calexp} has a bounding box from which the
-Coadds will be queried.  The multiple SkyMap patches that overlap this
-bounding box will be assembled into a single Exposure using the
-ImageDifferenceTask.getTemplate method.  This mosaiced coadd
-(a.k.a. the ``template'') is assumed to have a constant Psf and Calib
-across patches; these values will be set from those in the first
-overlapping patch.  The astrometric registration, and the
-Psf--matching, will both happen on the template, leaving the {\tt
+In detail, the bounding box of a given input {\tt calexp} will be used
+to query the Coadd database via the ImageDifferenceTask.getTemplate
+method.  The multiple SkyMap patches that overlap this bounding box
+will be assembled into a single Exposure.  This mosaiced coadd
+(a.k.a. the ``template'') is assumed to have a constant Psf.  All
+subsequent pixel operations -- astrometric registration and
+Psf--matching -- will happen on this template, leaving the {\tt
   calexp} pixels untouched.  This may in some cases result in
-deconvolution of the template image.  The is a general sense that the
-template may be deconvolved more reliably than the single--depth
-images, due to its higher signal--to--noise, but this has not been
-quantified.
+deconvolution of the template image.  There is a general sense that
+the template may be deconvolved more reliably than the single--depth
+images, due to its higher signal--to--noise.  Quantifying this is a
+research task for W13.
 
-Next the Task selects the objects to be used to Psf match the {\tt
-  calexp} and template.  There are two options at the moment.  The
-first involves use of a starSelectorRegistry.  This currently uses a
-``second moment'' star selector to ensure that we only receive stars
-in the list, but we may also adopt catalog--based selector that
-queries a reference catalog for sources, and may be used as a
-place--holder for a future specialized task that selects objects that
-are non--variable and have negligible proper motion.  The second
-option is to use native {\tt ip\_diffim} code that runs a very basic
-detection algorithm and then sorts by integrated flux.  This code was
-written long before starSelectorRegistries were implemented, and may
-arguably be deprecated.  In both cases, objects with Mask bits set in
-the Config (currently "EDGE" and "SAT") set are ignored.  We will run
-selection on the source list from the template, as this should not
-contain transient objects.  Another option is to instead run selection
-on the source lists that come from measurement on the {\tt calexp} or
-the {\tt coadd}, although the latter would have to be merged.
+The Task next selects the objects to be used to Psf match the {\tt
+  calexp} and template.  The code is currently configured to use a
+starSelectorRegistry ``second moment'' star selector, the native {\tt
+  ip\_diffim} object selection code having been deprecated.  A
+catalog--based star selector is envisioned as a longer--term solution
+that returns objects that are known to be non--variable and have
+negligible proper motion.  Selection is run using the template image,
+since this is likely to have higher signal--to--noise, and no
+astrophysical transients.  In a subsequent step, objects with Mask
+bits in either image (set in the Config, currently ``EDGE'' and
+``SAT'') are removed from the returned Source catalog.
 
-We next run the ImagePsfMatchTask.  This accepts the two Exposures,
-the FWHM of their two Psfs, and the Source list as inputs.  The FWHM
-will be used in a heuristic to determine the shape of the bases used
-to model the Psf--matching kernel.  This heuristic needs to be tuned
-on sample runs.  The overall number of bases becomes inflated by
-multiplying each basis with a set of Hermite--polynomials.  The number
-of bases ultimately used will be determined in pre--production by
-using a principled means of deciding how much information each basis
-contributes to the solution.  The Bayesian Information Criterion
-provides one such means.
+The code next runs the ImagePsfMatchTask.  This accepts the two
+Exposures, the FWHM of their two Psfs, and the Source catalog as
+inputs.  The FWHMs are used in a heuristic to determine the shape of
+the bases used to model the Psf--matching kernel.  This heuristic will
+be tuned on sample runs for W13.  The overall number of bases becomes
+inflated by multiplying each basis with a set of Hermite--polynomials.
+The number of bases ultimately used will be determined in
+pre--production by using a principled means of deciding how much
+information each basis contributes to the solution.  The Bayesian
+Information Criterion provides one such means.
 
 The internals of the ImagePsfMatchTask solve for $K(x,y)$ in the
 equation $S(x,y) = (K \otimes T)(x,y)$, where $S$ is the science
 calexp, $T$ is the template, and $K$ the Psf--matching kernel, by
 performing a linear decomposition of $K$ such that $K(u,v) = \sum_i
-a_i K_i(u,v)$.  The basis functions $K_i$ are decided using the
-heuristic above; thus the challenge is to solve for $a_i$.
+a_i K_i(u,v)$.  The basis functions $K_i$ are derived using the
+heuristic described above; thus the challenge is to solve for $a_i$.
 Additionally, the Psf--matching kernel is known to vary spatially
 across the image, thus the general problem is to solve for $a_i(x,y)$.
 This is accomplished by solving locally for $a_i$ at the positions
-$x,y$ of each object returned by the object selector, and creating a
-spatial model of these coefficients using a Chebyshev polynomial of
-order $N$.  We thus have {\it two} solutions that describe the quality
-of the Psf--match: using the original coefficients $a_i$; and using
-the interpolated coefficients $a{'}_i$ that are derived from the
-spatial model at $x,y$.  The distribution of residuals (mean and RMS
-of: the diffim residuals normalized by the square root of the
-variance) in each one of these KernelCandidates will be returned as
-metadata.  Importantly, we will use the residuals of a control sample
-of objects that are selected by the object selector, but not used in
-the actual kernel fit, to determine the overall quality of the
-difference image.
+$x,y$ of each object in the Source catalog, and creating a spatial
+model of these coefficients using a Chebyshev polynomial of order $N$.
+We thus have {\it two} solutions that we will use to ascertain the
+quality of the Psf--match: using the original coefficients $a_i$; and
+using the interpolated coefficients $a{'}_i$ that are derived from the
+spatial model at $x,y$.  The metrics we will derive from these
+solutions are the mean and root--mean--square values of: the diffim
+residuals normalized by the square root of the variance.  We will use
+the residuals of a control sample of objects that are selected by the
+object selector, but not used in the actual kernel fit, to determine
+the overall quality of the Psf--matching solution.
 
 This process results in a subtracted Exposure (the difference image).
-The detection planes of this image, inherited from the {\tt calexp}
+The detection planes of this image, inherited from the {\tt calexp},
 will be wiped clean in preparation for detection and measurement.  The
-Psf of the science image will be used to seed SourceDetectionTask,
-with sources of both positive and negative polarity.
+Psf of the science image will be used by SourceDetectionTask,
+configured to find sources of both positive and negative polarity.
 SourceDeblendTask is currently disabled in measurement.  Finally,
 SourceMeasurementTask will be performed on the difference image source
 catalog, using the aperture correction from the science image.  We
 will run an instance of a DipoleChecker class to search for and flag
-dipoles.  These will be persisted as DiaSources.  We require an
-association of these DiaSources with the reference catalog {\it and}
-the {\tt calexp} source catalog to assess where the sources are coming
-from.  At this stage, this must be done manually.  DiaSources will be
-written to the database in the {\tt WHAT} table, reference catalog
-matches in the {\tt WHAT} table, and {\tt calexp} Source matches in
-the {\tt WHAT} table.
+dipoles.  The results will be persisted as DiaSources.  We require a
+new subTask that associates these DiaSources with the reference
+catalog {\it and} the {\tt calexp} source catalog, to assess where the
+sources are coming from.  DiaSources will be written to the database,
+along with reference catalog and Source matches.  The Source match
+table is a new database requirement.
 
 \subsection{Input/Outputs}
 
 Inputs are:
-\begin{itemize}
-\item A {\tt calexp} containing the science data, along with its {\tt
-  Psf} and {\tt Wcs}
-\item A set of Coadds that fully overlap the bounding box of the {\tt
-  calexp}
-\end{itemize}
+
+-- A {\tt calexp} containing the science data, along with its {\tt
+  Psf} and {\tt Wcs}.
+
+-- A set of Coadds that cover the bounding box of the {\tt calexp}.
 
 Outputs are:
-\begin{itemize}
-\item Difference Exposure (data product; detection planes are set)
-\item DiaSources (data product)
-\item Psf--matched Image (metadata in pipeBase.Struct)
-\item Psf--matching Kernel (metadata in pipeBase.Struct)
-\item Background match (metadata in pipeBase.Struct)
-\item KernelCellSet (metadata in pipeBase.Struct)
-\end{itemize}
+
+-- Difference Exposure (data product; detection planes are set)
+
+-- DiaSources (data product)
+
+-- Psf--matched Image (metadata in pipeBase.Struct)
+
+-- Psf--matching Kernel (metadata in pipeBase.Struct)
+
+-- Background match (metadata in pipeBase.Struct)
+
+-- KernelCellSet (metadata in pipeBase.Struct)
 
 \subsection{ImagePsfMatchTask subTask}
 As described above, this subTask controls the actual Psf-matching of
-the {\tt calexp} and the template.  
+the {\tt calexp} and the template.  We will be using a
+sum--of--Gaussian basis for the matching Kernel, and a heuristic to
+choose both the Gaussian shapes within this basis and the degree of
+Hermite polynomials used to modify the Gaussians.
 
 \subsection{SourceDetectionTask subTask}
-As described above, this subTask uses the Psf of the input {\tt
-  calexp} to run detection on the difference Exposure.  The detection
-Config will be set to search for objects of both positive and negative
-polarity.  Estimation and re--estimation of the background will both
-be disabled.
+This subTask uses the Psf of the input {\tt calexp} to run detection
+on the difference Exposure.  The detection Config will be set to
+search for objects of both positive and negative polarity.  Estimation
+and re--estimation of the background will both be disabled.
 
 \subsection{SourceDeblendTask subTask}
-As described above, this subTask is by default turned off.
+This subTask by default is turned off.
 
 \subsection{SourceMeasurementTask subTask}
 As described above, this subTask performs measurement of the source
@@ -757,98 +755,115 @@ catalog returned by SourceDetectionTask.  It requires the aperture
 correction of the {\tt calexp}.
 
 \subsection{Issues}
-We do not have color--dependent Psf--matching kernels,
+
+-- We do not have color--dependent Psf--matching kernels,
 e.g. $K(x,y,g-r)$, which are needed in the presence of differential
 chromatic refraction.  This will impact the quality of the
 Psf--matching happening in ImagePsfMatchTask, in particular for
 objects of extreme color in the bluer passbands, and at high airmass.
 We will first investigate the fitting of $K(x,y)$ in the absence of
 DCR by operating on $i$--band data, and estimate the degradation in
-the quality of the solution when going to $g$--band through the
-control sample and debugging hooks.  Mitigation issues include
-templates at different airmasses, but this also requires sets both East
-and West of the meridian.
+the quality of the solution when going to $g$--band.  Mitigation
+strategies include creation of templates at different airmasses, but
+this also requires sets both East and West of the meridian.
 
-We need to assess the impact of objects with large proper motion on
-the creation of the template, where the objects will appear elongated,
-and on the residuals in the difference image, where such an apparition
-will leave a complex dipole shape.  We will first investigate this by
-creating templates from a finite window in time, and apply them to
-images from a similar window.
+-- Objects with high proper motion will leave streaked images in the
+Coadd, and result in a complex dipole structure in an image
+difference.  We will initially mitigate these effects by analyzing
+images from within a single observing season.
 
-We need to understand how to turn off the majority of the measurements
-for the star selection, in the interest of speed.
-
-We need to establish the minimum signal--to--noise of an object to be
+-- What is the minimum useful signal--to--noise of an object to be
 used in Kernel fitting.
 
+-- How do we prevent over-- or under--fitting of the spatial model?
 The number of sources that are detected in any given image determine
-the complexity of the model that may be used to build a Psf--matching
-kernel.  We need to decide if we are going to reduce the degree of the
-spatial model based on the number of detected sources or not; this
-means that the {\tt Config} will describe the heuristics used to
-determine the spatial order of the models, and not the spatial order
-of the models themselves.  This information needs to be persisted as
-metadata if we choose to go this route.
+the complexity of the model that may be supported.  We need to decide
+if we are going to reduce the degree of the spatial model based on the
+number of detected sources or not; this means that the {\tt Config}
+will describe the heuristics used to determine the spatial order of
+the models, and not the spatial order of the models themselves.  This
+information needs to be persisted as metadata if we choose to go this
+route.
 
-We need to establish how much the template may be deconvolved in the
-case that the science data have a narrower FWHM.  Alternately, we need
-to understand the impacts of convolving the science image on the depth
-we may detect to in the difference image.
+-- We need to establish how much the template may be deconvolved in
+the case that the science data have a narrower FWHM.  Alternately, we
+need to understand the impacts of convolving the science image on the
+depth we may detect to in the difference image.
+
+-- We will turn off the majority of the measurements for the star
+selection, in the interest of speed.
+
 
 \subsection{New Development Tasks}
-We need to evaluate the number of bases needed, using e.g. the
-Bayesian Information Criterion, as a function of Psf FWHM and
-variation.
 
-We need to tune the heuristic that selects the shapes of the Gaussians
-based on the FWHM of the {\tt calexp} and the template.
+-- Tune the heuristic that selects the shapes of the Gaussians based
+on the FWHM of the {\tt calexp} and the template.
 
-We need a piece of code to query the database, find the overlapping
-tracts, and coadd them into a template.  A stub for this exists in
-ImageDifferenceTask.getTemplate but has not been extensively tested.
+-- Evaluate the number of Kernel bases needed as a function of Psf
+FWHM and variation.
 
-\ajc Define the database query to specify the overlapping tracts that
+-- Formalize metrics and quality ranges to assess the goodness of fit
+of the spatial kernel using the control sample.
+
+-- Implement these metrics in pipeQA.
+
+-- Define the database query to specify the overlapping tracts that
 will be used for template generation (stub exists in
 ImageDifferenceTask.getTemplate)
 
-We need to create a catalog--based selector to return objects for
-Kernel modeling, if we choose to use this over the second--moment star
-selector.
+-- Add a dipole flag for the DiaSources.
 
-Do we use RHL's option to pre--convolve.
+-- Create a Task for source association between the DiaSources and the
+reference catalog sources, and with the {\tt calexp} Sources.  The
+latter also requires a new table in the database.
 
-We need a dipole flag for the DiaSources.
+-- Debug ingest of the DiaSources into MySQL.
 
-We need source association for the DiaSources and the reference
-catalog sources, and also with the {\tt calexp} Sources.
+-- Investigate RHL's option to pre--convolve.
 
-We need to exercise ingest of the DiaSources into MySQL.
-
-We need to establish metrics and quality ranges to assess the goodness
-of fit of the spatial kernel.
-
-We need to implement these metrics in pipeQA.
-
-Stretch goals : study of new bases, and Gaussian processes for
-interpolation.
-
-Turn into core chunks of work!
-> - Develop Gaussian Processes based interpolation and evaluate against polynomial interpolation
+-- Stretch goal: develop Gaussian Processes based interpolation and
+evaluate against polynomial interpolation
 
 \subsection{Tuning Parameters}
-We need to decide on the object selection algorithm used to seed the
-kernel fit.
 
-We need to tune the heuristic that chooses the shapes and number of
-basis function for the sum--of--Gaussian kernel basis.
+-- Tune the heuristic that chooses the shapes of the Kernel basis
+based on the input FWHMs.
 
-The default for Winter2013 is to use Chebyshev polynomials for spatial
-interpolation.  We need to use decide on the necessary spatial order
-for this polynomial $N$.  A stretch goal will be to implement Gaussian
-processes (kriging).
+-- Tune the size of the Kernel basis using a method that quantifies
+degree of overfitting (e.g. BIC).
+
+-- The degree of the spatial kernel model.  Optionally allow it to
+float based on the number of KernelCandidates.
+
+-- The degree of the spatial background--matching model ({\it not} the
+same as BackgroundMatchingTask).
+
+-- Use a per--pixel variance, or a single variance for the entire
+image.
 
 \subsection{Metrics and Testing Tools}
+
+-- In pre--production, testing of the heuristic that defines the shape
+of the Gaussians.
+
+-- In pre--production, testing of the number of basis functions needed
+to provide a quality fit.  
+
+-- The fundamental quality metric we have been using is the
+distribution of residuals in the difference image, normalized by the
+square--root of the variance.  We will examine the value of this
+metric for the per--object fitted coefficients, as well as the
+spatially interpolated coefficients, to determine how much the spatial
+model degrades the fit.  We will also define a control sample of
+objects to ascertain the final quality of the image subtraction.
+
+-- Efficiency and purity of object detection and measurement will be
+done by comparing the DiaSources to the (time--dependent) reference
+catalog.
+
+-- False positives (most likely to be associated with bright stars)
+will be investigated by looking at their properties in the database
+(colors and proper motions).
 
 Important metrics that will be exercised pre--production include: the
 use of the BIC to determine the complexity of the kernel basis; an
@@ -859,10 +874,10 @@ In production our core metrics will include: what are the residuals of
 a control sample of stars after application of the Psf--matching
 kernel.
 
-Several debugging hooks have been implemented in {\tt ip\_diffim} for
+-- Several debugging hooks have been implemented in {\tt ip\_diffim} for
 the visualization of the inputs and outputs to ImageDifferenceTask.
-What remains to be done is to turn these into pipeQA tests; currently
-no metrics querying the DiaSources exist.
+
+-- Persist appropriate metrics to enable the above testing in pipeQA.
 
 %%%%%%%
 
