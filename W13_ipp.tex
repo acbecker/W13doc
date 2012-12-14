@@ -384,8 +384,8 @@ We don't believe this will be an issue for image differencing because the templa
 to match the science exposure before subtracting. If it does prove to be a problem
 we can switch to using HealpixSkyMap with smaller tracts.
 
-SkyMap unpersistence has been a bit troublesome due to pickling pex_config fields.
-When pex_config changes sometimes this breaks SkyMap unpersistence. We must fix this eventually.
+SkyMap unpersistence has been a bit troublesome due to pickling pex\_config fields.
+When pex\_config changes sometimes this breaks SkyMap unpersistence. We must fix this eventually.
 I don't think it's a high priority, but we could try to fix it in time for late Winter2012 production.
 
 \subsection{New Development Tasks}
@@ -435,48 +435,47 @@ contribute {\bf $10\%$} of the total flux.
 \subsection{Input/Outputs}
 
 \subsection{WarpAndPsfMatchTask subTask} \becker
+
 This subTask first undertakes the Psf--matching of the input {\tt
-  calexp} to that desired for the Coadd.  It then astrometrically
-warps this Psf--matched to the astrometric footprint of the Coadd.
-The Psf--matching happens through the ModelPsfMatchTask subTask.  This
-differs from ImagePsfMatchTask, described in detail in
+  calexp} Psf to that desired for the Coadd.  It then astrometrically
+warps this Psf--matched image to the astrometric footprint of the
+Coadd.  The Psf--matching happens through the ModelPsfMatchTask
+subTask.  This differs from ImagePsfMatchTask, described in detail in
 Section~\ref{sec-imagedifftask}, in one major detail.  In this case,
-the {\tt calexp's} {\it model} Psf is taken from the butler, and
+the {\tt calexp's} {\it model} Psf is read through the butler, and
 compared to the idealized Psf that we wish to realize for the Coadd.
-Each Psf is realized in a grid of $x,y$ positions around the {\tt
-  calexp} to account for spatial variation of the {\tt calexp} Psf
-(the Coadd Psf model will not be designed to vary).  This will be
-entered into a KernelCandidate, which it itself entered into a
+Each Psf is realized in a grid of $x,y$ positions to account for
+spatial variation of the {\tt calexp} Psf (the Coadd Psf model is
+designed to not vary).  The two Psfs will be entered into a
+KernelCandidate as Images, which it itself entered into a
 SpatialCellSet, and sent along to the fitting code where the
 functionality is again the same as ImagePsfMatchTask.  Because the
-concept of ``variance'' is nebulous when comparing model--to--model,
-all sigma clipping is turned off and the variance is assumed to have a
-constant weight.
-
+concept of ``variance'' is ill--defined when comparing
+model--to--model, all sigma clipping is turned off and the variance is
+assumed to have a constant weight.
 
 There is trade--off in this process that needs to be explored in
-detail.  First--off, we define the dimensions of the {\tt calexp} Psf
-as $P \times P$, the FWHM of the Coadd Psf as $C$, and the dimensions
-of the Psf--matching kernel as $K \times K$.  When fitting for the
-matching Kernel, each Psf image gets convolved with the Kernel basis
-functions, trimming $K//2$ pixels off of each side due to EDGE
-effects.  Thus the final number of pixels we have to constrain the
-Kernel coefficients are $(P-K) \times (P-K)$.  This means that as the
-Kernel gets larger, the number of pixels we have to constrain the
-solution gets smaller, and the solution may become unstable.
-Providing tension in the other direction is that if the kernel
-dimensions too small, to the extent that $P//2 < n \times C$ (i.e. its
-smaller than say $n=3$ times the FWHM of the Psf you are matching to),
-the kernel stamp is not large enough to capture all the power needed
-to match to that large of a FWHM.  This ends up yielding ``boxy''
+detail during W13.  To illustrate this, we define the dimensions of
+the {\tt calexp} Psf as $P \times P$, the FWHM of the Coadd Psf as
+$C$, and the dimensions of the Psf--matching kernel as $K \times K$.
+When fitting for the matching Kernel, each Psf image gets convolved
+with each Kernel basis function, trimming $K//2$ pixels off of each
+side due to EDGE effects.  Thus the final number of pixels we have to
+constrain the Kernel coefficients are $(P-K) \times (P-K)$.  This
+means that as the Kernel gets larger, the number of pixels we have to
+constrain the solution gets smaller, and the solution may become
+unstable.  Providing tension in the other direction is that if the
+kernel dimensions are too small compared to $C$, the kernel stamp is
+not large enough to capture all the power needed to match to that
+large of a FWHM.  This ends up yielding ``boxy'' stars in the
 Psf--matched images.  Ultimately, we are limited by the dimensions of
 the {\tt calexp} Psf model $P$, which in turn sets the maximum size of
 the kernel such that $(P-K) \times (P-K)$ provides sufficient ability
 to constrain all of the Kernel basis coefficients, which in turn sets
-the size of the Psf we may match to ($C = P//2 / n$) without
-sufficiently impacting the shapes of the stars.  This trade--off,
-including the definitions of ``sufficient'' above, have not been
-explored in thorough detail.
+the size of the Psf $C$ we may match to without sufficiently impacting
+the shapes of the stars.  This trade--off, including the definitions
+of ``sufficient'' above, will be explored in thorough detail in W13
+pre--production.
 
 When choosing the desired FWHM of the Coadd, we will use the
 distribution of FWHM of the input data.  Typically this comes from the
@@ -490,31 +489,50 @@ detail.
 
 \subsection{Issues}
 
-The process of Psf--matching first, and then warping to the Coadd
-footprint, may fail to represent the true shape of the Coadd Psf (in
-pixel space) near the edges of tracts.
+-- If the model--to--model Psf--matching kernel is too big, we have
+too few pixels to constrain the solution.
 
-We have not explored the trade--offs between Psf dimensions, matching
-kernel dimensions, and the FWHM of the Psf we may match to.
+-- If the model--to--model Psf--matching kernel is too small, it
+limits the FWHM of the desired Psf of our coadd (otherwise the stars
+become boxy on the scale of the kernel).
 
-We do not have color-dependent Psfs.  This will be minimized by
-analysis of $i$--band data, and explored in analysis of $g$--band
-data.
+-- If there is a limitation on the FWHM of the coadd Psf, we are
+limited in the number of images we may use with (FWHM$_i$ $<$
+FWHM$_{Coadd}$), impacting our final depth.
 
-We need to understand ``how much'' deconvolution the code can handle,
+-- If we wish to increase our depth and include images in the coadd
+with (FWHM$_i$ $>$ FWHM$_{Coadd}$), we will have to deconvolve.
+
+-- We need to understand ``how much'' deconvolution the code can handle,
 both in terms of the fraction of images that were deconvolved, and the
 degree to which each of the images is deconvolved.
 
-The {\tt meas\_mosaic}, which is a port of HSC's \"{u}ber cal, is
-necessary to correct known deficiencies in LSST's {\tt meas\_astrom}
-package.  This has proven necessary for creation of non--smeared
-coadded images, reducing the RMS of the astrometric fit by a factor of
-two.  This is leading to an additional systematic component equivalent
-to {\bf XXX} in coadded images, and will vary spatially.
+-- We do not have color-dependent Psfs.  This will be minimized by
+analysis of $i$--band data, and explored in analysis of $g$--band
+data.
+
+-- The process of Psf--matching first, and then warping to the Coadd
+footprint, may fail to represent the true shape of the Coadd Psf (in
+pixel space) near the edges of tracts.
+
+-- The {\tt meas\_mosaic} package, which is a port of HSC's \"{u}ber
+cal, is necessary to correct known deficiencies in LSST's {\tt
+  meas\_astrom} package.  This has proven necessary for creation of
+non--smeared coadded images, reducing the RMS of the astrometric fit
+by a factor of two.  This is leading to an additional systematic
+component equivalent to {\bf XXX} in coadded images, and will vary
+spatially.
 
 \subsection{New Development Tasks}
 
-Code to select from database
+-- Investigate the trade--offs between Psf size, kernel size, and FWHM
+of the Codd.
+
+-- Establish how the Psf, depth, and variance of the coadd respond to
+the amount of deconvolution, both in terms of the number of
+deconvolved images, and the degree of deconvolution.
+
+-- Code to select from database
 
 \subsection{Tuning Parameters}
 We will need to test the following Psf--matching configs:
@@ -526,6 +544,13 @@ We will need to test the following Psf--matching configs:
 \end{itemize}
 
 \subsection{Metrics and Testing Tools}
+
+-- Establish the stability of the model--to--model Psf--matching
+kernel as a function of Psf dimension and Kernel dimension by tracking
+the condition number of the solution.
+
+-- The Psf shape, noise properties, and photometric depth of the coadd
+will be used to determine the impacts of deconvolution.
 
 %%%%%%%
 
@@ -910,6 +935,11 @@ Database Ingest               & 10$^{-X}$ sec & Rows         & XXX             &
 \subsection{ProcessCcdTask}
 \begin{python}
 processCcd.py
+
+--config
+snapCombine.diffim.kernel=''DF''
+snapCombine.doSimpleAverage=False
+snapCombine.doPsfMatch=True
 \end{python}
 
 
@@ -930,6 +960,10 @@ skyMap.active.tractOverlap=3.5
 \subsection{MakeCoaddTempExpTask} 
 \begin{python}
 makeCoaddTempExp.py
+
+--config
+coaddKernelSizeFactor=3.0
+warpAndPsfMatch.psfMatch.kernel=''AL''
 \end{python}
 
 \subsection{AssembleCoaddTask} 
