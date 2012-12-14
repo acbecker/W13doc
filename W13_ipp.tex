@@ -445,13 +445,13 @@ Inputs include science exposures ("calexp"), a database providing information ab
 those calexp, selection criteria, the desired coadd ("deep" or "goodSeeing"),
 the skymap for that coadd and model PSF parameters.
 
-The output is a set of coadd temp exposures ("deepCoadd_tempExp" or "goodSeeingCoadd_tempExp").
+The output is a set of coadd temp exposures ("deepCoadd\_tempExp" or "goodSeeingCoadd\_tempExp").
 
 \subsection{SelectImagesTask subTask} \russ
 
 This subTask selects science exposures that are suitable for the coadd
 based on criteria such as PSF FWHM and sky background. It operates by
-querying the Science_Ccd_Exposure table of a database of information about calexp.
+querying the Science\_Ccd\_Exposure table of a database of information about calexp.
 
 \subsection{WarpAndPsfMatchTask subTask} \becker
 
@@ -560,8 +560,8 @@ deconvolved images, and the degree of deconvolution.
 
 -- We want to be able to warp model PSFs, to improve the quality of our PSF matching.
 
--- The current Science_Ccd_Exposure table and SelectImagesTask need improvement.
-The only measure of image quality that Science_Ccd_Exposure contains is PSF FWHM.
+-- The current Science\_Ccd\_Exposure table and SelectImagesTask need improvement.
+The only measure of image quality that Science\_Ccd\_Exposure contains is PSF FWHM.
 We would like additional information such as PSF ellipticity, airmass and sky brightness.
 In addition, we plan to develop an equation that computes a single measure of quality
 based on these various bits of information.
