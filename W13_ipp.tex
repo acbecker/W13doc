@@ -182,15 +182,62 @@ of work before it can be submitted for review.
 
 \clearpage 
 \section{CreateCalibrationProductsTask} \simon
+This work has not yet been completed.  This section is to outline the processing and needed work.  
+The purpose of this task is to take individual calibration frames and combine them into
+high signal to noise master frames.  Examples will be: masterbias, masterdark, masterflat, etc.  
+This task will not be camera specific and will be overridden by camera specific configs (and potentially
+retargetted subtasks) in the camera obs package.  The general flow of data will be to process the individual frames
+with the appropriate instrument signature removal (ISR) steps for the product and camera.  Next a scale is computed for each of the input
+frames.  Finally the frames are combined into the master frame.
+
+\subsection{Input/Outputs}
+Inputs are:
+\begin{itemize}
+\item A set of raw calibration frames.
+\end{itemize}
+Outputs are:
+\begin{itemize}
+\item A set of master calibration frames.
+\end{itemize}
+
+\subsection{CalibrationProcessTask subTask}
+This is an ISR-like task that corrects the frames for the appropriate instrumental effects for that calibration
+product.
+\subsection{CalibrationScaleTask}
+This task determines the scaling for a particular single epoch.  This task is responsible for
+scaling all flats in a focal plane so that there is a single normalization for the full focalplane.
+\subsection{CalibrationCombineTask}
+The individual calibration frames are combined into a single high signal to noise master frame.
+
+\subsection{Issues}
+This task is relatively straight forward for the calibration products we are currently handling.  I design review will be scheduled
+to address any implementation issues.
+
+
+\subsection{CalibProcessTask}
 
 %%%%%%%
 
 \clearpage 
-\section{ProcessCcdTask} \simon
+\section{ProcessImageTask} 
+The ProcessCcdTask is does the work required to take input data from raw form all the way to a calibrated and
+photometered science image.  This task is subclassed with camera specific configs and processing, but the overall 
+work flow is first to do the instrument signature removal step which is handled by the camera specific subclass.  For imSim
+data, there is an additional step of combining the individual snap images before the rest of processing happens. Next calibration
+is run.  This measures the PSF and aperuture correction, and also does the photometric and astrometric calibration.  
+Detection comes next.  After detection footprints are deblended.
+Finally measurement is run on the deblended footprints.  Most of the above steps are optional, but care should be taken
+when turning any one off that it does not affect down stream processing.
 
 \subsection{Input/Outputs}
+Inputs are:
+\begin{itemize}
+\item Raw science frame
+\item Astrometry.net index files for photometric and astrometric calibration
+\item Master calibration frames
+\end{itemize}
 
-Outputs will be:
+Outputs are:
 \begin{itemize}
 \item Metadata for ingest
 \item Src for ingest
@@ -199,10 +246,13 @@ Outputs will be:
 \item Psf for Psf matching
 \end{itemize}
 
+\subsection{IsrTask subTask}
+It was decided that the instrument signature removal was so dependent on the specific instrument setup that a generalized
+ISR task was not generally useful.  The ISR is expected to be handled by a camera specific task in the camera obs package.  
+For imSim the process is overscan subtraction, bias correction, flat correction, assembly of amps into a ship size image, 
+and interpolation of saturated and bad pixels.
 
-\subsection{IsrTask} \simon
-
-\subsection{SnapCombineTask} \becker
+\subsection{SnapCombineTask subTask} \becker
 
 The baseline LSST observing plans defines a field ``visit'' as the
 acquisition of two back--to--back images (called Snaps) and their
@@ -283,24 +333,60 @@ the first snap of the visit pair.  The FITS keywords that will {\it
   not} be modified in this process, and that are common between the
 two Snaps, include: {\bf Filter}.
 
-\subsection{Calibrate/Detect/Measure subTasks} \simon
-The important parameters to consider are:
-\begin{itemize} 
-\item background grid size -- There are several of these in the config
-  so we should understand what each one does
-\item aperture size for aperture corrections -- the default is likely
-  too small
-\item deblending radius
-\item galaxy shape parameters
-\end{itemize}
+\subsection{CalibrateTask subTasks} 
+First off the calibration repairs any cosmic rays it finds.
+The calibrate task does an initial optional background subtraction and detection phase (which also does a background background subtraction).  The detected sources are used to calculate
+the PSF, the aperture correction, the photometric zeropoint, and are fed to the astrometry.net framework for astrometric
+calibration.
 
-\subsection{AstrometryTask} \simon
+\subsection{DetectTask subTask}
+The detect task does an optional second background estimation taking into account the original detection mask set by the calibrate task.
+It then runs final detection.
 
+\subsection{DeblendTask subTask}
+The deblend task searches for peaks within the footprints returned by the detect task and splits the children out into deblended sources.
+
+\subsection{MeasureTask subTask}
+The measure task makes the statistical measurements on each footprint (or peak if deblended).
+
+\subsection{Issues}
+-- A primary issue is which steps in processCcd can be turned off.  In our experience with Stripe82, we found that the products produced by
+essentially all steps were necessary in later processes.  The one possible exception was the deblendTask.  Aperture corrections (CalibrateTask) 
+are needed by forced photometry, zeropoints (CalibrateTask)
+are needed by pipeQA and makeCoaddTask, and detection planes (DetectTask) are needed by the background matching tasks.
+
+{\bf imSim IsrTask}
+-- Saturation detection is done before bad pixel masking because we have the pixel masks in CCD coordinates.
+This meant that some bad pixels were also marked as SAT.  We fix this by changing all SAT+BAD pixels back to just BAD.
+
+-- The flats had per chip normalizations meaning that the zeropoint was not fixed for the focalplane.  This should be
+fixed by the new calibration products task
+
+{\bf SnapCombineTask}
+-- The cores of bright (but not saturated) stars show up as residuals
+in the Snap image difference.
+
+-- We do not currently have tools to access the list of cosmic rays
+that were input to an image (locations, shapes and amplitudes).
+
+\subsection{New Development Tasks}
+
+{\bf SnapCombineTask}
+-- Develop tools to compare Snap DiaSources with the known cosmic ray
+list, and the known star list.
+
+-- Develop cuts on measurement features to distinguish cosmics from
+stellar cores in the Snap DiaSources.
+
+-- Establish the size of the sum--of--Gaussian basis set for SnapPsfMatchTask.
+
+{\bf Reference Catalog}
 We already have a stars only reference catalog for the entire area
-covered by the W13 ImSim area.  We will produce the galaxy catalog to
+covered by the W13 ImSim area.  
+
+--We will produce the galaxy catalog to
 go along with this.  The reference catalog will contain the following
 columns:
-
 \begin{itemize}
 \item id -- unique integer id of the object traceable back to the base catalogs
 \item RA position of the object centroid in degrees
@@ -318,37 +404,29 @@ columns:
 \item A\_v reddening 
 \end{itemize}
 
-We will also need the reference catalog to be a function of time for
+-- We will also need the reference catalog to be a function of time for
 the time variable objects (brightness, position).  This has not been
 done before.
 
-\subsection{Issues}
-
--- The cores of bright (but not saturated) stars show up as residuals
-in the Snap image difference.
-
--- We do not currently have tools to access the list of cosmic rays
-that were input to an image (locations, shapes and amplitudes).
-
-\subsection{New Development Tasks}
-
-
--- Develop tools to compare Snap DiaSources with the known cosmic ray
-list, and the known star list.
-
--- Develop cuts on measurement features to distinguish cosmics from
-stellar cores in the Snap DiaSources.
-
--- Establish the size of the sum--of--Gaussian basis set for SnapPsfMatchTask.
-
--- The reference catalog needs to have time--dependent entries.
+-- Make a task to generate the astrometry.net indexes and on disk reference catalog.
 
 \subsection{Tuning Parameters}
-
+{\bf snapCombineTask}
 -- The type of basis set (sum--of--Gaussian or delta--function) used
 to perform the SnapPsfMatchTask.
 
 -- The size of the sum--of--Gaussian basis set (if it is used).
+
+{\bf CalibrateTask}
+-- background grid size -- There are several of these in the config
+  so we should understand what each one does
+-- aperture size for aperture corrections -- the default is too small
+
+{\bf DeblendTask}
+-- deblending radius
+
+{\bf MeasurementTask}
+-- galaxy shape parameters
 
 \subsection{Metrics and Testing Tools}
 
@@ -384,8 +462,8 @@ We don't believe this will be an issue for image differencing because the templa
 to match the science exposure before subtracting. If it does prove to be a problem
 we can switch to using HealpixSkyMap with smaller tracts.
 
-SkyMap unpersistence has been a bit troublesome due to pickling pex_config fields.
-When pex_config changes sometimes this breaks SkyMap unpersistence. We must fix this eventually.
+SkyMap unpersistence has been a bit troublesome due to pickling {\it pex\_config} fields.
+When {\it pex\_config} changes sometimes this breaks SkyMap unpersistence. We must fix this eventually.
 I don't think it's a high priority, but we could try to fix it in time for late Winter2012 production.
 
 \subsection{New Development Tasks}
@@ -843,9 +921,33 @@ no metrics querying the DiaSources exist.
 
 \clearpage 
 \section{Database Ingestion} \simon
+This step is essentially a set of by hand operations.  I have hear rumors of
+a generic sourceIngestTask, but have not used it.  This is only one aspect of the
+database ingestion, however.  The steps for the different phases of ingestion will be:
+{\bf SFM Source Ingestion}
+\begin{enumerate}
+\item Run ingestProcessed.py
+\item Run sourceAssociation.py
+\item Run ingestSourceAssociation.py
+\item Run referenceMatch.py
+\end{enumerate}
 
-\subsection{Input/Outputs}
+{\bf Coadd Source Ingestion}
+\begin{enumerate}
+\item Run ingestCoadd.py
+\item Run referenceMatchCoadd.py
+\end{enumerate}
+
+{\bf Forced Source Ingestion}
+\begin{enumerate}
+\item Run ingestForcedSource.py
+\end{enumerate}
+
 \subsection{Issues}
+-- This needs to be taskified and made so that it can be parallelized
+-- There is some parallel capability, but it is largely by hand.
+-- If a parallel ingestion scheme is used, the tables need to be merged and indexed which can take a long time
+
 \subsection{New Development Tasks}
 \subsection{Tuning Parameters}
 \subsection{Metrics and Testing Tools}
