@@ -423,16 +423,35 @@ information about a sky map and displays a 3d graph of it.
 %%%%%%%
 
 \clearpage 
-\section{MakeCoaddTempExpTask} \yusra
+\section{MakeCoaddTempExpTask} \becker (warp and PSF match) and \russ (select images)
 
-The input images will be Psf--matched to a designed template Psf
-before coaddition.  This Psf will be a circular double Gaussian
+Suitable science images will be selected based on criteria such as PSF FWHM.
+These images will then be Psf--matched to a model Psf and warped
+to the WCS of the desired coadd patch to produce a coadd temp exposure
+
+The model PSF will be a circular double Gaussian
 function, with the smaller of the Gaussians having the FWHM of the
 {\bf XX}$^{th}$ percentile of the input images' FWHM.  The outer
 Gaussian will have a FWHM of {\bf twice?} the central Gaussian, and
 contribute {\bf $10\%$} of the total flux.
 
+All CCDs from a visit that overlap a particular patch are combined into one coadd temp exposure,
+so we will create one coadd temp exposure per patch per visit.
+These coadd temp exposures are later assembled into a coadd by AssembleCoaddTask.
+
 \subsection{Input/Outputs}
+
+Inputs include science exposures ("calexp"), a database providing information about
+those calexp, selection criteria, the desired coadd ("deep" or "goodSeeing"),
+the skymap for that coadd and model PSF parameters.
+
+The output is a set of coadd temp exposures ("deepCoadd_tempExp" or "goodSeeingCoadd_tempExp").
+
+\subsection{SelectImagesTask subTask} \russ
+
+This subTask selects science exposures that are suitable for the coadd
+based on criteria such as PSF FWHM and sky background. It operates by
+querying the Science_Ccd_Exposure table of a database of information about calexp.
 
 \subsection{WarpAndPsfMatchTask subTask} \becker
 
@@ -489,6 +508,13 @@ detail.
 
 \subsection{Issues}
 
+-- Science images are presently Psf--matched to a model that is constant in pixel space.
+However, we want to match to a model PSF that is constant on the sky. We worry that the
+distortion near the edge of the LSST's field of view may be large enough
+that this distinction will prove significant. Jim Bosch is working on code
+that will eliminate this issue by allowing us to warp model PSFs.
+However, it is likely that we will produce some preliminary data before this new code is ready.
+
 -- If the model--to--model Psf--matching kernel is too big, we have
 too few pixels to constrain the solution.
 
@@ -532,7 +558,13 @@ of the Coadd.
 the amount of deconvolution, both in terms of the number of
 deconvolved images, and the degree of deconvolution.
 
--- Code to select from database
+-- We want to be able to warp model PSFs, to improve the quality of our PSF matching.
+
+-- The current Science_Ccd_Exposure table and SelectImagesTask need improvement.
+The only measure of image quality that Science_Ccd_Exposure contains is PSF FWHM.
+We would like additional information such as PSF ellipticity, airmass and sky brightness.
+In addition, we plan to develop an equation that computes a single measure of quality
+based on these various bits of information.
 
 \subsection{Tuning Parameters}
 We will need to test the following Psf--matching configs:
@@ -543,6 +575,9 @@ We will need to test the following Psf--matching configs:
 \item kernel size
 \end{itemize}
 
+We will need to tune our image selection criteria (possibly including our image quality metric)
+to select suitable images.
+
 \subsection{Metrics and Testing Tools}
 
 -- Establish the stability of the model--to--model Psf--matching
@@ -551,6 +586,11 @@ the condition number of the solution.
 
 -- The Psf shape, noise properties, and photometric depth of the coadd
 will be used to determine the impacts of deconvolution.
+
+-- It would be nice to be able to evaluate how well the new image quality metric
+works. That would allow us to improve the metric. However, we expect this equation
+to have a fairly shallow minimum and to not be easily testable, so we may well end up
+with heuristic that seems to be good enough.
 
 %%%%%%%
 
