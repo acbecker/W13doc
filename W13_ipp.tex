@@ -43,6 +43,8 @@
 \ensuremath{\natural} {\bf Russ:}  
 \ensuremath{\natural} } }
 
+\newcommand{\comment}[1]{{\color{cyan} [{comment: #1}]}}
+
 %\titlecontents{subsection}[4.8em]{}{\contentslabel{2.4em}}{\hspace*{-2.8m}}{...}
 %\titlecontents{subsubsection}[6.0em]{}{\contentslabel{2.4em}}{\hspace*{-2.8m}}{}
 
@@ -592,6 +594,13 @@ This subTask selects science exposures that are suitable for the coadd
 based on criteria such as PSF FWHM and sky background. It operates by
 querying the Science\_Ccd\_Exposure table of a database of information about calexp.
 
+\subsection{ScaleZeroPointTask} \yusra
+
+This subTask  photometrically calibrates each {\tt coaddTempExp} to a common zero point. 
+
+In the coadd process, it is important that background matcher not try to fit discontinuous offsets in the background levels. For this reason, the multiplicative scale factor applied to the coaddTempExp should vary smoothly across the patch. For stripe-82 early production we assumed that the zero-point in the runs varied smoothly in the R.A direction only, because of the drift-scan camera.  The diameter of an LSST focal plane with be 17$\times$  that of an SDSS camcol, and we assume that the zeropoint varies across the focal plane in 2 dimensions.  The zeropoints are already calculated in {\tt processCcd} and stored Science\_Ccd\_Exposure. The {\tt ScaleZeroPointTask}, pins the zeropoint down in the center of each ccd and interpolates a multiplicative scale factor across the patch.  Development planned for this task is described in 
+Evaluation and Development. 
+
 \subsection{WarpAndPsfMatchTask subTask} \becker
 
 This subTask first undertakes the Psf--matching of the input {\tt
@@ -705,6 +714,8 @@ We would like additional information such as PSF ellipticity, airmass and sky br
 In addition, we plan to develop an equation that computes a single measure of quality
 based on these various bits of information.
 
+--  Extend the ZeroPointScalerTask to fit a 2-D spline to the zeropoints calculated for each ccd in {\tt processCcd}.   {\tt afw} already contains 2-D spline capabilities, however the only interface at the moment is the {\tt background} class. The API to the background class only accepts an image. We need to extend this  to be able to accept a list of grid points.   As a stretch goal, we can  interpolate the scale factor across the patch using the zeropoint of each star. This is an appropriate application for a Gaussian Process/Kriging function. 
+
 \subsection{Tuning Parameters}
 We will need to test the following Psf--matching configs:
 \begin{itemize}
@@ -716,6 +727,8 @@ We will need to test the following Psf--matching configs:
 
 We will need to tune our image selection criteria (possibly including our image quality metric)
 to select suitable images.
+
+
 
 \subsection{Metrics and Testing Tools}
 
@@ -737,36 +750,85 @@ with heuristic that seems to be good enough.
 \section{AssembleCoaddTask} \yusra
 
 The coadded template image will be constructed using background
-matching, as opposed to background subtraction.  The image subtraction
-code will also be run using its own internal background--matching (of
-template to science image) model, yielding a difference image with a
-background level of 0.  Currently using a Chebyshev with order 3.
+matching, as opposed to background subtraction. The assembleCoadd task assembles a coadd from a set of coadd temporary exposures ({\tt coaddTempExp}s).   Each {\tt coaddTempExp} is the size of a patch defined by the {\tt skyMap} and contains overlapping pixels for only a single visit.  The {\tt coaddTempExp}s have already been scaled to a common zeropoint and psf-matched.  However, they still have their backgrounds and therefore require background-matching to a reference visit. The reference visit is selected based primarily on fuller coverage of the patch and low background levels and background variance. 
 
-We need to make sure all necessary metadata ends up in the database.
-This includes zeropoints, sky background, Psf FWHM.
+The assembleCoadd task assumes that all {\tt coaddTempExp}s cannot fit in memory at the same time. The following steps outline the processing in more detail: \comment{Or the following processing steps can be deleted it too much detail.}
+\begin{enumerate}
+\item  Read in {\tt coaddTempExp}s one at a time and fill a list of weights (inverse mean variance) for each image 
+\item Pass the following to the background matching task: a list of dataRefs of the {\tt coaddTempExp}s, and the reference exposure dataRef (if supplied).  Receive back a struct containing a lists of structs containing  {\tt Background} objects and statistics describing quality of fit.  Prune this list of exposures, removing the coaddTempExps for which the background-matching failed: (e.g. too many nans, or MSE/Var did not make the quality threshold.)
+\item Grid the patch into a smaller sub-regions{\tt subBBox}es. For each  {\tt subBBox} read in each image and keep in memory only the region that overlaps the {\tt subBBox}. Add the corresponding region from the Background object to bring the background level up to that of the reference image.  Coadd by calculating the mean with optional outlier rejection.  Repeat for {\tt next subBBox}.  Persist coadd. 
+\end{enumerate}
+
+%The image subtraction
+%code will also be run using its own internal background--matching (of
+%template to science image) model, yielding a difference image with a
+%background level of 0.  Currently using a Chebyshev with order 3.
+
+%We need to make sure all necessary metadata ends up in the database.
+%This includes zeropoints, sky background, Psf FWHM.
 
 \subsection{Input/Outputs}
+\begin{description}
+\item[Inputs]  a repository containing coadd temporary exposures and a skyMap
+\item[Outputs]  Coadds
+\end{description}
 
-\subsection{BackgroundMatchingTask} \yusra
+\subsection{BackgroundMatchingTask subTask} \yusra
+The matchBackground task matches the background of each coadd temp exposure to the level of the reference exposure.   In general this is done by fitting a spatial model to the difference of each input exposure and the reference exposure -- with detections and bad pixels masked out.  This will equalize the background levels from visit to visit, while preserving diffuse astrophysical structures.  The task assumes that all the input images are the same size, have been warped  and have been flux-scaled. 
 
-\subsection{Issues}
+\begin{description}
+\item[Inputs] A list of dataRefs  pointing to {\tt coaddTempExp}s and an optional dataRef to the reference exposure. 
+\item[Outputs]  Return a struct of a list of struct containing:
+\begin{itemize}
+\item backgroundModel: an afw.math.Approximate or an afw.math.Background. (Or {\tt None} if fit failed. 
+\item fitRMS: rms of the fit,  sqrt(mean(residuals**2)).
+\item matchedMSE: the MSE of the reference and matched images, mean((refImage - matchedSciImage)**2);   should be comparable to the mean variance of the difference image.
+\item  diffImVar: the mean variance of the difference image.
+\end {itemize}
+\end{description}
 
-Flux scaling (2-d spline)
+Detailed Processing Steps: \comment{can be removed if too much detail}
+\begin{enumerate}
+\item Select a reference image if none was provided.
+\item  For each coaddTempExp:  
+Subtract the exposure from the reference exposure, and then pass generate an afw.math.Background object of this difference image. It assumes (but does not require or check) that the mask plane already has detections set.  The 'background' of the difference image is a collection of grid points that will be smoothed by spline interpolation (by the Background class)  or by polynomial interpolation by the Approximate class when an image is requested from it later. 
+\item return {\tt pipebase.struct}
+\end{enumerate}
 
-\subsection{New Development Tasks}
-Spreading of Mask bits.  
+\subsection{Evaluation and Development}
 
-How do we define the selection criteria, and select, input and
-reference images from the database.
 
-We need a tool that measures how well PSF matching to a model PSF
-works. One source of such data is PSF-matched coadd temp exposures.
+\begin{enumerate}
+\item Development: Move flux-scaling procedure to {\tt makeCoaddTempExp.py}.  Currently, the assembleCoadd performs the flux-scaling step. This design was a temporary solution to an early-production problem.  It would be much more efficient and clean for the flux scaling to be performed in makeCoaddTempExp.
 
-Flux scaling (2-d spline)
+\item Development:  Move the background-matching quality cut to the {\tt matchBackgrounds} subtask (hours work).
 
-\subsection{Tuning Parameters}
+\item Development:  Check that API of background matching task is appropriate for {\tt ImageDifferenceTask} to match the science image to the template before subtracting. 
+
+\item Evaluation: Determine the optimal background matching style (polynomial, spline) and parameters (order, bin size) for the 4000$\times$4000 patches. Differences between stripe82 data and ImSim data (e.g. the chip gaps and offsets between CCDs) prevent us from simply reusing the parameters from early production.
+
+\item Development (out of scope): Write a task that will select a reference run based on the database that optimizes continuity over a large region of the sky. By large region, we mean $>>$ patch. 
+
+\item Spreading of Mask bits.  \comment{placeholder?}
+
+\item We need a tool that measures how well PSF matching to a model PSF
+works. One source of such data is PSF-matched coadd temp exposures. \comment{placeholder? Look like it should go in the makeCoaddTempExp evaluation section, because psfMatching is described there}
+
+\item \comment{This is covered in the makeCoaddTempExp section:  'How do we define the selection criteria, and select, input and reference images from the database.?' }
+
+\item \comment{Moved to makeCoaddTempExp: Flux scaling (2-d spline)}
+
+\end{enumerate}
 
 \subsection{Metrics and Testing Tools}
+
+\begin{itemize}
+\item To test the quality of fit in the background matching step, 
+{\tt matchBackgrounds} contains a debugging method that plots the residuals of the fit.  In addition, the statistics returned for each fit (MSE and variance of the difference image) allow assessment of the interpolation styles/parameters.
+\item PipeQA
+\end{itemize}
+
+
 
 %%%%%%%
 
