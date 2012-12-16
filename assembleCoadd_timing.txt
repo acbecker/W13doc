@@ -1,0 +1,185 @@
+assembleCoadd.py task timing
+
+# PSF-matched (shouldn't matter) with 3 sigma outlier rejection
+assembleCoadd.run: CpuTime median=149.0; mean=139.888888889; stdDev=15.6591786676; min=117; max=161; n=9
+assembleCoadd:select.run: CpuTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd.stack: CpuTime median=4.0; mean=7.81481481481; stdDev=5.65709673633; min=0; max=16; n=81
+assembleCoadd:interpImage.interpolateOnePlane: CpuTime median=1.0; mean=0.666666666667; stdDev=0.666666666667; min=0; max=2; n=9
+
+# Non-PSF-matched (shouldn't matter) with 3 sigma outlier rejection
+CameraMapper: Loading registry registry from /lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_s3/_parent/_parent/registry.sqlite3
+assembleCoadd.run: CpuTime median=163.0; mean=161.444444444; stdDev=13.7768816913; min=145; max=180; n=9
+assembleCoadd:select.run: CpuTime median=0.0; mean=0.222222222222; stdDev=0.415739709642; min=0; max=1; n=9
+assembleCoadd.stack: CpuTime median=4.0; mean=8.04938271605; stdDev=5.94605634339; min=0; max=16; n=81
+assembleCoadd:interpImage.interpolateOnePlane: CpuTime median=0.0; mean=0.444444444444; stdDev=0.496903995; min=0; max=1; n=9
+
+# non-PSF-matched (shouldn't matter) 10 sigma outlier rejection
+assembleCoadd.run: CpuTime median=162.0; mean=160.555555556; stdDev=14.2213541402; min=142; max=178; n=9
+assembleCoadd:select.run: CpuTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd.stack: CpuTime median=4.0; mean=8.01234567901; stdDev=5.82988009355; min=0; max=16; n=81
+assembleCoadd:interpImage.interpolateOnePlane: CpuTime median=0.0; mean=0.222222222222; stdDev=0.415739709642; min=0; max=1; n=9
+
+# Non-PSF-matched (shouldn't matter) with NO outlier rejection
+lsst11$ reportTaskTiming.py /lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_sinf --datasettype=goodSeeing_assembleCoadd_metadata \
+> --id filter=r tract=3 patch=76,68^76,69^76,70^77,68^77,69^77,70^78,68^78,69^78,70
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/reportTaskTiming.py'
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/lsstSim/reportTaskTiming.py'
+: input=/lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_sinf
+: calib=None
+: output=None
+CameraMapper: Loading registry registry from /lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_sinf/_parent/_parent/registry.sqlite3
+assembleCoadd.run: CpuTime median=106.0; mean=108.333333333; stdDev=9.68389269756; min=96; max=124; n=9
+assembleCoadd:select.run: CpuTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd.stack: CpuTime median=1.0; mean=2.22222222222; stdDev=1.60246723354; min=0; max=5; n=81
+assembleCoadd:interpImage.interpolateOnePlane: CpuTime median=0.0; mean=0.444444444444; stdDev=0.496903995; min=0; max=1; n=9
+
+
+# PSF-matched (shouldn't matter) 3 sigma outlier rejection
+lsst11$ reportTaskTiming.py /lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0/goodSeeingCoadd_s3 --datasettype=goodSeeing_assembleCoadd_metadata \
+> --id filter=r tract=3 patch=76,68^76,69^76,70^77,68^77,69^77,70^78,68^78,69^78,70
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/reportTaskTiming.py'
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/lsstSim/reportTaskTiming.py'
+: input=/lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0/goodSeeingCoadd_s3
+: calib=None
+: output=None
+CameraMapper: Loading registry registry from /lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0/goodSeeingCoadd_s3/_parent/_parent/registry.sqlite3
+assembleCoadd:interpImage.interpolateOnePlane: CpuTime median=1.0; mean=0.666666666667; stdDev=0.666666666667; min=0; max=2; n=9
+assembleCoadd:interpImage.interpolateOnePlane: UTime median=0.0; mean=0.222222222222; stdDev=0.415739709642; min=0; max=1; n=9
+assembleCoadd:interpImage.interpolateOnePlane: STime median=0.0; mean=0.222222222222; stdDev=0.415739709642; min=0; max=1; n=9
+assembleCoadd:interpImage.interpolateOnePlane: MaxRss median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: CpuTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: UTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: STime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: MaxRss median=0.0; mean=41.7777777778; stdDev=118.165399878; min=0; max=376; n=9
+assembleCoadd.run: CpuTime median=149.0; mean=139.888888889; stdDev=15.6591786676; min=117; max=161; n=9
+assembleCoadd.run: UTime median=121.0; mean=115.111111111; stdDev=12.879306783; min=97; max=131; n=9
+assembleCoadd.run: STime median=25.0; mean=24.6666666667; stdDev=3.01846171271; min=21; max=31; n=9
+assembleCoadd.run: MaxRss median=0.0; mean=118120.444444; stdDev=334095.069054; min=0; max=1063084; n=9
+assembleCoadd.stack: CpuTime median=4.0; mean=7.81481481481; stdDev=5.65709673633; min=0; max=16; n=81
+assembleCoadd.stack: UTime median=4.0; mean=7.75308641975; stdDev=5.71446262273; min=0; max=16; n=81
+assembleCoadd.stack: STime median=0.0; mean=0.037037037037; stdDev=0.188852574578; min=0; max=1; n=81
+assembleCoadd.stack: MaxRss median=0.0; mean=1005.03703704; stdDev=6052.78596898; min=0; max=39008; n=81
+
+# Non-PSF-matched (shouldn't matter) 3 sigma outlier rejection
+lsst11$ reportTaskTiming.py /lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_s3 --datasettype=goodSeeing_assembleCoadd_metadata \
+> --id filter=r tract=3 patch=76,68^76,69^76,70^77,68^77,69^77,70^78,68^78,69^78,70
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/reportTaskTiming.py'
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/lsstSim/reportTaskTiming.py'
+: input=/lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_s3
+: calib=None
+: output=None
+CameraMapper: Loading registry registry from /lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_s3/_parent/_parent/registry.sqlite3
+assembleCoadd:interpImage.interpolateOnePlane: CpuTime median=0.0; mean=0.444444444444; stdDev=0.496903995; min=0; max=1; n=9
+assembleCoadd:interpImage.interpolateOnePlane: UTime median=0.0; mean=0.333333333333; stdDev=0.471404520791; min=0; max=1; n=9
+assembleCoadd:interpImage.interpolateOnePlane: STime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd:interpImage.interpolateOnePlane: MaxRss median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: CpuTime median=0.0; mean=0.222222222222; stdDev=0.415739709642; min=0; max=1; n=9
+assembleCoadd:select.run: UTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd:select.run: STime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: MaxRss median=0.0; mean=41.3333333333; stdDev=116.908321156; min=0; max=372; n=9
+assembleCoadd.run: CpuTime median=163.0; mean=161.444444444; stdDev=13.7768816913; min=145; max=180; n=9
+assembleCoadd.run: UTime median=131.0; mean=128.222222222; stdDev=10.9420471148; min=113; max=141; n=9
+assembleCoadd.run: STime median=32.0; mean=33.2222222222; stdDev=3.67507453523; min=29; max=40; n=9
+assembleCoadd.run: MaxRss median=0.0; mean=136909.777778; stdDev=336080.036045; min=0; max=1084564; n=9
+assembleCoadd.stack: CpuTime median=4.0; mean=8.04938271605; stdDev=5.94605634339; min=0; max=16; n=81
+assembleCoadd.stack: UTime median=4.0; mean=8.07407407407; stdDev=5.85161743553; min=0; max=16; n=81
+assembleCoadd.stack: STime median=0.0; mean=0.037037037037; stdDev=0.188852574578; min=0; max=1; n=81
+assembleCoadd.stack: MaxRss median=0.0; mean=2630.37037037; stdDev=9023.10164904; min=0; max=38992; n=81
+
+# non-PSF-matched (shouldn't matter) 10 sigma outlier rejection
+lsst11$ reportTaskTiming.py /lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_s10 --datasettype=goodSeeing_assembleCoadd_metadata \
+> --id filter=r tract=3 patch=76,68^76,69^76,70^77,68^77,69^77,70^78,68^78,69^78,70
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/reportTaskTiming.py'
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/lsstSim/reportTaskTiming.py'
+: input=/lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_s10
+: calib=None
+: output=None
+CameraMapper: Loading registry registry from /lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_s10/_parent/_parent/registry.sqlite3
+assembleCoadd:interpImage.interpolateOnePlane: CpuTime median=0.0; mean=0.222222222222; stdDev=0.415739709642; min=0; max=1; n=9
+assembleCoadd:interpImage.interpolateOnePlane: UTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd:interpImage.interpolateOnePlane: STime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd:interpImage.interpolateOnePlane: MaxRss median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: CpuTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd:select.run: UTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: STime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: MaxRss median=0.0; mean=41.3333333333; stdDev=116.908321156; min=0; max=372; n=9
+assembleCoadd.run: CpuTime median=162.0; mean=160.555555556; stdDev=14.2213541402; min=142; max=178; n=9
+assembleCoadd.run: UTime median=132.0; mean=128.333333333; stdDev=10.8115164935; min=113; max=141; n=9
+assembleCoadd.run: STime median=31.0; mean=32.2222222222; stdDev=3.76468318802; min=27; max=37; n=9
+assembleCoadd.run: MaxRss median=4.0; mean=136911.111111; stdDev=336179.362908; min=0; max=1084852; n=9
+assembleCoadd.stack: CpuTime median=4.0; mean=8.01234567901; stdDev=5.82988009355; min=0; max=16; n=81
+assembleCoadd.stack: UTime median=4.0; mean=8.07407407407; stdDev=5.78584432153; min=1; max=16; n=81
+assembleCoadd.stack: STime median=0.0; mean=0.037037037037; stdDev=0.188852574578; min=0; max=1; n=81
+assembleCoadd.stack: MaxRss median=0.0; mean=2627.75308642; stdDev=9016.24385061; min=0; max=39004; n=81
+
+lsst11$ reportTaskTiming.py /lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_sinf --datasettype=goodSeeing_assembleCoadd_metadata \
+> --id filter=r tract=3 patch=76,68^76,69^76,70^77,68^77,69^77,70^78,68^78,69^78,70
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/reportTaskTiming.py'
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/lsstSim/reportTaskTiming.py'
+: input=/lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_sinf
+: calib=None
+: output=None
+CameraMapper: Loading registry registry from /lsst8/krughoff/scidb_reductions/coadd_medium/goodSeeingCoadd_sinf/_parent/_parent/registry.sqlite3
+assembleCoadd:interpImage.interpolateOnePlane: CpuTime median=0.0; mean=0.444444444444; stdDev=0.496903995; min=0; max=1; n=9
+assembleCoadd:interpImage.interpolateOnePlane: UTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd:interpImage.interpolateOnePlane: STime median=0.0; mean=0.222222222222; stdDev=0.415739709642; min=0; max=1; n=9
+assembleCoadd:interpImage.interpolateOnePlane: MaxRss median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: CpuTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd:select.run: UTime median=0.0; mean=0.222222222222; stdDev=0.415739709642; min=0; max=1; n=9
+assembleCoadd:select.run: STime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: MaxRss median=0.0; mean=41.3333333333; stdDev=116.908321156; min=0; max=372; n=9
+assembleCoadd.run: CpuTime median=106.0; mean=108.333333333; stdDev=9.68389269756; min=96; max=124; n=9
+assembleCoadd.run: UTime median=75.0; mean=75.4444444444; stdDev=5.81398908976; min=68; max=83; n=9
+assembleCoadd.run: STime median=31.0; mean=33.1111111111; stdDev=3.95655418106; min=28; max=41; n=9
+assembleCoadd.run: MaxRss median=0.0; mean=136910.666667; stdDev=340589.049438; min=0; max=1097372; n=9
+assembleCoadd.stack: CpuTime median=1.0; mean=2.22222222222; stdDev=1.60246723354; min=0; max=5; n=81
+assembleCoadd.stack: UTime median=1.0; mean=2.14814814815; stdDev=1.58005400057; min=0; max=5; n=81
+assembleCoadd.stack: STime median=0.0; mean=0.0246913580247; stdDev=0.155182778889; min=0; max=1; n=81
+assembleCoadd.stack: MaxRss median=0.0; mean=2617.13580247; stdDev=9229.89398138; min=0; max=39000; n=81
+
+
+# the following measurements make no sense: where is stacking? interpolation? why did it run so fast?
+
+# PSF-matched (shouldn't matter) 10 sigma outlier rejection
+lsst11$ reportTaskTiming.py /lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0/goodSeeingCoadd_s10 --datasettype=goodSeeing_assembleCoadd_metadata \
+> --id filter=r tract=3 patch=76,68^76,69^76,70^77,68^77,69^77,70^78,68^78,69^78,70
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/reportTaskTiming.py'
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/lsstSim/reportTaskTiming.py'
+: input=/lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0/goodSeeingCoadd_s10
+: calib=None
+: output=None
+CameraMapper: Loading registry registry from /lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0/goodSeeingCoadd_s10/_parent/_parent/registry.sqlite3
+assembleCoadd:select.run: CpuTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: UTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd:select.run: STime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: MaxRss median=0.0; mean=41.3333333333; stdDev=116.908321156; min=0; max=372; n=9
+assembleCoadd.run: CpuTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd.run: UTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd.run: STime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd.run: MaxRss median=0.0; mean=145.333333333; stdDev=406.826198217; min=0; max=1296; n=9
+
+
+# assembleCoadd PSF-matched (shouldn't matter) with NO outlier rejection
+lsst11$ reportTaskTiming.py /lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0/goodSeeingCoadd_s10 --datasettype=goodSeeing_assembleCoadd_metadata \
+> --id filter=r tract=3 patch=76,68^76,69^76,70^77,68^77,69^77,70^78,68^78,69^78,70
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/reportTaskTiming.py'
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/lsstSim/reportTaskTiming.py'
+: input=/lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0/goodSeeingCoadd_s10
+: calib=None
+: output=None
+CameraMapper: Loading registry registry from /lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0/goodSeeingCoadd_s10/_parent/_parent/registry.sqlite3
+assembleCoadd:select.run: CpuTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: UTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd:select.run: STime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd:select.run: MaxRss median=0.0; mean=41.3333333333; stdDev=116.908321156; min=0; max=372; n=9
+assembleCoadd.run: CpuTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd.run: UTime median=0.0; mean=0.111111111111; stdDev=0.314269680527; min=0; max=1; n=9
+assembleCoadd.run: STime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+assembleCoadd.run: MaxRss median=0.0; mean=145.333333333; stdDev=406.826198217; min=0; max=1296; n=9
+
+
+
+
+
+
+

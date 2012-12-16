@@ -40,7 +40,7 @@
 \ensuremath{\diamondsuit} } }
 
 \newcommand{\russ} { \textcolor{green} {
-\ensuremath{\natural} {\bf Russ:}  
+\ensuremath{\natural} {\bf Russell:}  
 \ensuremath{\natural} } }
 
 \newcommand{\comment}[1]{{\color{cyan} [{comment: #1}]}}
@@ -48,7 +48,7 @@
 %\titlecontents{subsection}[4.8em]{}{\contentslabel{2.4em}}{\hspace*{-2.8m}}{...}
 %\titlecontents{subsubsection}[6.0em]{}{\contentslabel{2.4em}}{\hspace*{-2.8m}}{}
 
-\author{Andrew Becker, Simon Krughoff, Andrew Connolly, Yusra AlSayyad, Russ Owen}
+\author{Andrew Becker, Simon Krughoff, Andrew Connolly, Yusra AlSayyad, Russell Owen}
 \title{Roadmap for Winter2013 Production}
 \date{\today}
 
@@ -1211,30 +1211,30 @@ database ingestion, however.  The steps for the different phases of ingestion wi
 \small
 \begin{center}
 \caption{\label{tab-pars} Estimated Processing Times}
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccl}
 \hline \hline
-Task                          & Time/Unit     & Units        & Number of Units & Total Time\\
+Task                          & Time/Unit     & Units        & Number of Units & Total Time & Notes \\
 \hline
-Build Registry                & 10 min        & Visit        & XXX             &           \\ 
-ProcessCcdTask                & X min         & Ccd          & XXX             &           \\ % Sum of all 4 subtasks below
-~~~~~~IsrTask                 & 1 min         & $\cdots$     & $\cdots$        &           \\
-~~~~~~SnapCombineTask         &               & $\cdots$     & $\cdots$        &           \\
-~~~~~~Calexp CDM              &               & $\cdots$     & $\cdots$        &           \\
-~~~~~~AstrometryTask          &               & $\cdots$     & $\cdots$        &           \\
-MakeSkyMapTask                & 10 sec        & Skymap       & 1               &           \\
-MakeCoaddTempExpTask          &               & Visit-Patch  & XXX             &           \\
-AssembleCoaddTask             &               & Patch        & XXX             &           \\   
-ProcessCoaddTask              &               & Patch        & XXX             &           \\
-ImageDifferenceTask           &               & Ccd          & XXX             &           \\
-~~~~~~ImagePsfMatchTask       &               & $\cdots$     & $\cdots$        &           \\
-~~~~~~SourceDetectionTask     &               & $\cdots$     & $\cdots$        &           \\
-~~~~~~SourceMeasurementTask   &               & $\cdots$     & $\cdots$        &           \\
-~~~~~~SourceDeblendTask       &               & $\cdots$     & $\cdots$        &           \\
+Build Registry                & 10 min        & Visit        & XXX             &        &  \\ 
+ProcessCcdTask                & 110 sec + SnapCombineTask & Ccd          & XXX             &        &  \\ % Sum of all 4 subtasks below
+~~~~~~IsrTask                 & 30 sec        & $\cdots$     & $\cdots$        &        &  \\
+~~~~~~SnapCombineTask         & ?             & $\cdots$     & $\cdots$        &        &  \\
+~~~~~~Calexp CDM              & 80 sec        & $\cdots$     & $\cdots$        &        &  \\
+~~~~~~AstrometryTask          & 1 sec         & $\cdots$     & $\cdots$        &        &  \\
+MakeSkyMapTask                & 10 sec        & Skymap       & 1               &        &  \\
+MakeCoaddTempExpTask          & 180 min       & Visit-Patch  & XXX             & for 79 CCDs &\\
+AssembleCoaddTask             & 149 sec       & Patch        & XXX             & for 9 coaddTEmpExp &  \\   
+ProcessCoaddTask              & ?             & Patch        & XXX             &        &  \\
+ImageDifferenceTask           & ?             & Ccd          & XXX             &        &  \\
+~~~~~~ImagePsfMatchTask       &               & $\cdots$     & $\cdots$        &        &  \\
+~~~~~~SourceDetectionTask     &               & $\cdots$     & $\cdots$        &        &  \\
+~~~~~~SourceMeasurementTask   &               & $\cdots$     & $\cdots$        &        &  \\
+~~~~~~SourceDeblendTask       &               & $\cdots$     & $\cdots$        &        &  \\
 \hline
-Database Ingest               & 10$^{-X}$ sec & Rows         & XXX             &           \\
-~~~~~~Calexp                  &               & Rows         & XXX             &           \\
-~~~~~~Coadd                   &               & Rows         & XXX             &           \\
-~~~~~~DiaSource               &               & Rows         & XXX             &           \\
+Database Ingest               & 10$^{-X}$ sec & Rows         & XXX             &        &  \\
+~~~~~~Calexp                  &               & Rows         & XXX             &        &  \\
+~~~~~~Coadd                   &               & Rows         & XXX             &        &  \\
+~~~~~~DiaSource               &               & Rows         & XXX             &        &  \\
 \hline
 \hline
 \end{tabular}

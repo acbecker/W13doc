@@ -1,0 +1,66 @@
+makeCoaddTempExp.py task timing
+
+PSF match to 1.0 arcsec
+makeCoaddTempExp.run: CpuTime median=10827.0; mean=9942.11111111; stdDev=2552.70472873; min=5743; max=12949; n=9
+makeCoaddTempExp:select.run: CpuTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+makeCoaddTempExp:warpAndPsfMatch.warp: CpuTime median=10.0; mean=14.8527349229; stdDev=16.9862388477; min=0; max=71; n=713
+makeCoaddTempExp:warpAndPsfMatch:psfMatch.run: CpuTime median=108.0; mean=109.002805049; stdDev=3.1153590447; min=107; max=122; n=713
+
+No PSF matching
+makeCoaddTempExp.run: CpuTime median=1796.0; mean=1780.44444444; stdDev=334.042615748; min=1302; max=2177; n=9
+makeCoaddTempExp:select.run: CpuTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+makeCoaddTempExp.warp: CpuTime median=10.0; mean=15.6513661202; stdDev=17.6554078711; min=0; max=71; n=915
+
+
+# PSF match to 1.0 arcsec
+lsst11$ reportTaskTiming.py /lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0 --datasettype=goodSeeing_makeCoaddTempExp_metadata \
+> --id filter=r tract=3 patch=76,68^76,69^76,70^77,68^77,69^77,70^78,68^78,69^78,70
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/reportTaskTiming.py'
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/lsstSim/reportTaskTiming.py'
+: input=/lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0
+: calib=None
+: output=None
+CameraMapper: Loading registry registry from /lsst8/krughoff/scidb_reductions/coadd_psfMatched_1.0/_parent/registry.sqlite3
+makeCoaddTempExp.run: CpuTime median=10827.0; mean=9942.11111111; stdDev=2552.70472873; min=5743; max=12949; n=9
+makeCoaddTempExp.run: UTime median=10770.0; mean=9889.0; stdDev=2541.02918782; min=5707; max=12878; n=9
+makeCoaddTempExp.run: STime median=57.0; mean=53.1111111111; stdDev=11.7893025375; min=37; max=71; n=9
+makeCoaddTempExp.run: MaxRss median=0.0; mean=121158.666667; stdDev=326476.27404; min=0; max=1043856; n=9
+makeCoaddTempExp:warpAndPsfMatch.warp: CpuTime median=10.0; mean=14.8527349229; stdDev=16.9862388477; min=0; max=71; n=713
+makeCoaddTempExp:warpAndPsfMatch.warp: UTime median=10.0; mean=14.8316970547; stdDev=16.9461569428; min=0; max=71; n=713
+makeCoaddTempExp:warpAndPsfMatch.warp: STime median=0.0; mean=0.0490883590463; stdDev=0.216052521514; min=0; max=1; n=713
+makeCoaddTempExp:warpAndPsfMatch.warp: MaxRss median=0.0; mean=343.399719495; stdDev=4300.97827925; min=0; max=83492; n=713
+makeCoaddTempExp:select.run: CpuTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+makeCoaddTempExp:select.run: UTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+makeCoaddTempExp:select.run: STime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+makeCoaddTempExp:select.run: MaxRss median=0.0; mean=41.3333333333; stdDev=116.908321156; min=0; max=372; n=9
+makeCoaddTempExp:warpAndPsfMatch:psfMatch._solve: CpuTime median=3.0; mean=2.94950911641; stdDev=0.243231886516; min=2; max=4; n=713
+makeCoaddTempExp:warpAndPsfMatch:psfMatch._solve: UTime median=3.0; mean=2.91444600281; stdDev=0.279704327387; min=2; max=3; n=713
+makeCoaddTempExp:warpAndPsfMatch:psfMatch._solve: STime median=0.0; mean=0.0266479663394; stdDev=0.161052327612; min=0; max=1; n=713
+makeCoaddTempExp:warpAndPsfMatch:psfMatch._solve: MaxRss median=0.0; mean=297.486676017; stdDev=7937.93458994; min=0; max=212108; n=713
+makeCoaddTempExp:warpAndPsfMatch:psfMatch.run: CpuTime median=108.0; mean=109.002805049; stdDev=3.1153590447; min=107; max=122; n=713
+makeCoaddTempExp:warpAndPsfMatch:psfMatch.run: UTime median=108.0; mean=108.782608696; stdDev=3.07943100239; min=107; max=121; n=713
+makeCoaddTempExp:warpAndPsfMatch:psfMatch.run: STime median=0.0; mean=0.22159887798; stdDev=0.415322543643; min=0; max=1; n=713
+makeCoaddTempExp:warpAndPsfMatch:psfMatch.run: MaxRss median=0.0; mean=588.49368864; stdDev=14853.1294499; min=0; max=396612; n=713
+
+# no PSF matching
+lsst11$ reportTaskTiming.py /lsst8/krughoff/scidb_reductions/coadd_medium --datasettype=goodSeeing_makeCoaddTempExp_metadata \
+> --id filter=r tract=3 patch=76,68^76,69^76,70^77,68^77,69^77,70^78,68^78,69^78,70
+
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/reportTaskTiming.py'
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/lsstSim/reportTaskTiming.py'
+: input=/lsst8/krughoff/scidb_reductions/coadd_medium
+: calib=None
+: output=None
+CameraMapper: Loading registry registry from /lsst8/krughoff/scidb_reductions/coadd_medium/_parent/registry.sqlite3
+makeCoaddTempExp.run: CpuTime median=1796.0; mean=1780.44444444; stdDev=334.042615748; min=1302; max=2177; n=9
+makeCoaddTempExp.run: UTime median=1700.0; mean=1690.22222222; stdDev=315.082626827; min=1245; max=2061; n=9
+makeCoaddTempExp.run: STime median=95.0; mean=90.2222222222; stdDev=22.2199998889; min=56; max=118; n=9
+makeCoaddTempExp.run: MaxRss median=0.0; mean=107383.555556; stdDev=261471.370758; min=0; max=844648; n=9
+makeCoaddTempExp.warp: CpuTime median=10.0; mean=15.6513661202; stdDev=17.6554078711; min=0; max=71; n=915
+makeCoaddTempExp.warp: UTime median=10.0; mean=15.506010929; stdDev=17.4793153928; min=0; max=71; n=915
+makeCoaddTempExp.warp: STime median=0.0; mean=0.173770491803; stdDev=0.534463105101; min=0; max=5; n=915
+makeCoaddTempExp.warp: MaxRss median=0.0; mean=149.761748634; stdDev=4434.4570836; min=0; max=134184; n=915
+makeCoaddTempExp:select.run: CpuTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+makeCoaddTempExp:select.run: UTime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+makeCoaddTempExp:select.run: STime median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+makeCoaddTempExp:select.run: MaxRss median=0.0; mean=41.3333333333; stdDev=116.908321156; min=0; max=372; n=9
