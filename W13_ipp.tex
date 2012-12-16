@@ -1213,17 +1213,17 @@ database ingestion, however.  The steps for the different phases of ingestion wi
 \caption{\label{tab-pars} Estimated Processing Times}
 \begin{tabular}{lccccl}
 \hline \hline
-Task                          & Time/Unit     & Units        & Number of Units & Total Time & Notes \\
+Task                          & Time/Unit     & Units        & No. Units & Total Time & Notes \\
 \hline
 Build Registry                & 10 min        & Visit        & XXX             &        &  \\ 
-ProcessCcdTask                & 110 sec + SnapCombineTask & Ccd          & XXX             &        &  \\ % Sum of all 4 subtasks below
+ProcessCcdTask                & 110 sec + ?   & Ccd          & XXX             &        &  \\ % Sum of all 4 subtasks below
 ~~~~~~IsrTask                 & 30 sec        & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~SnapCombineTask         & ?             & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~Calexp CDM              & 80 sec        & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~AstrometryTask          & 1 sec         & $\cdots$     & $\cdots$        &        &  \\
 MakeSkyMapTask                & 10 sec        & Skymap       & 1               &        &  \\
-MakeCoaddTempExpTask          & 180 min       & Visit-Patch  & XXX             & for 79 CCDs &\\
-AssembleCoaddTask             & 149 sec       & Patch        & XXX             & for 9 coaddTEmpExp &  \\   
+MakeCoaddTempExpTask          & 180 min       & Visit-Patch  & XXX             &        & 79 CCDs \\
+AssembleCoaddTask             & 150 sec       & Patch        & XXX             &        & 9 coaddTEmpExp \\   
 ProcessCoaddTask              & ?             & Patch        & XXX             &        &  \\
 ImageDifferenceTask           & ?             & Ccd          & XXX             &        &  \\
 ~~~~~~ImagePsfMatchTask       &               & $\cdots$     & $\cdots$        &        &  \\
