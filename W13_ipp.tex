@@ -232,31 +232,44 @@ deg (18 master flats) should bring this below the nominal 1\% error.
 
 {\bf Reference Catalog}\\
 We already have a stars only reference catalog for the entire area
-covered by the W13 ImSim area.  
-
---We will produce the galaxy catalog to
+covered by the W13 ImSim area.  We will produce the galaxy catalog to
 go along with this.  The reference catalog will contain the following
 columns:
-\begin{itemize}
-\item id -- unique integer id of the object traceable back to the base catalogs
-\item RA position of the object centroid in degrees
-\item DEC position of the object centroid in degrees
-\item {u,g,r,i,z,y} observed LSST magnitudes (in the mean sense for variable objects)
-\item proper motion in RA marcsec/yr
-\item proper motion in Dec marcsec/yr
-\item object class id (main sequence star, wd, bhb, etc.)
-\item variability class (Agn, m-dwarf flare, RRly, etc. 0 if not variable)
-\item galaxy position angle in degrees (do we measure these, or should we give these in both components)
-\item galaxy semi-major axis 
-\item galaxy semi-minor axis
-\item bulge to total ratio
-\item Agn to total ratio
-\item disk to total ratio
-\item Agn variability parameters (tau and SF\_{u,g,r,i,z,y})
-\item A\_v reddening 
-\end{itemize}
 
--- We will also need the reference catalog to be a function of time for
+-- id -- unique integer id of the object traceable back to the base catalogs
+
+-- RA position of the object centroid in degrees
+
+-- DEC position of the object centroid in degrees
+
+-- {u,g,r,i,z,y} observed LSST magnitudes (in the mean sense for variable objects)
+
+-- proper motion in RA marcsec/yr
+
+-- proper motion in Dec marcsec/yr
+
+-- object class id (main sequence star, wd, bhb, etc.)
+
+-- variability class (Agn, m-dwarf flare, RRly, etc. 0 if not variable)
+
+-- galaxy position angle in degrees (do we measure these, or should we give these in both components)
+
+-- galaxy semi-major axis 
+
+-- galaxy semi-minor axis
+
+-- bulge to total ratio
+
+-- Agn to total ratio
+
+-- disk to total ratio
+
+-- Agn variability parameters (tau and SF\_{u,g,r,i,z,y})
+
+-- A\_v reddening 
+
+
+We will also need the reference catalog to be a function of time for
 the time variable objects (brightness, position).  This has not been
 done before.
 
@@ -277,13 +290,12 @@ frames.  Finally the frames are combined into the master frame.
 
 \subsection{Input/Outputs}
 Inputs are:
-\begin{itemize}
-\item A set of raw calibration frames.
-\end{itemize}
+
+-- A set of raw calibration frames.
+
 Outputs are:
-\begin{itemize}
-\item A set of master calibration frames.
-\end{itemize}
+
+-- set of master calibration frames.
 
 \subsection{CalibrationProcessTask subTask}
 This is an ISR-like task that corrects the frames for the appropriate instrumental effects for that calibration
@@ -317,20 +329,28 @@ when turning any one off that it does not affect down stream processing.
 
 \subsection{Input/Outputs}
 Inputs are:
-\begin{itemize}
-\item Raw science frame
-\item Astrometry.net index files for photometric and astrometric calibration
-\item Master calibration frames
-\end{itemize}
+
+-- Raw science frame
+
+-- Astrometry.net index files for photometric and astrometric calibration
+
+-- Master calibration frames
+
+
 
 Outputs are:
-\begin{itemize}
-\item Exposure metadata for ingest (bboxes, zeropoints, etc.)
-\item Src for ingest
-\item Calexp for input to {\tt ip\_diffim}
-\item Background to add to Calexp for {\tt ip\_diffim}
-\item Psf for Psf matching
-\end{itemize}
+
+-- Exposure metadata for ingest (bboxes, zeropoints, etc.)
+
+-- Src for ingest
+
+-- Calexp for input to {\tt ip\_diffim}
+
+-- Background to add to Calexp for {\tt ip\_diffim}
+
+-- Psf for Psf matching
+
+
 
 \subsection{IsrTask subTask}
 It was decided that the instrument signature removal was so dependent on the specific instrument setup that a generalized
@@ -339,7 +359,7 @@ For imSim the process is overscan subtraction, bias correction, flat correction,
 and interpolation of saturated and bad pixels.
 
 \subsection{SnapCombineTask subTask} \becker
-
+{\bf MOVE TO EVAL AND DEVL}
 The baseline LSST observing plans defines a field ``visit'' as the
 acquisition of two back--to--back images (called Snaps) and their
 combination into a single visit Exposure.  The motivation for this is
@@ -699,7 +719,7 @@ spatially.
 
 \subsection{New Development Tasks}
 
--- Investigate the trade--offs between Psf size, kernel size, and FWHM
+-- Evaluate the trade--offs between Psf size, kernel size, and FWHM
 of the Coadd.
 
 -- Establish how the Psf, depth, and variance of the coadd respond to
@@ -718,12 +738,14 @@ based on these various bits of information.
 
 \subsection{Tuning Parameters}
 We will need to test the following Psf--matching configs:
-\begin{itemize}
-\item Psf size (set in processCcd)
-\item Psf grid 
-\item Psf model functions
-\item kernel size
-\end{itemize}
+
+-- Psf size (set in processCcd)
+
+-- Psf grid 
+
+-- Psf model functions
+
+-- kernel size
 
 We will need to tune our image selection criteria (possibly including our image quality metric)
 to select suitable images.
@@ -779,12 +801,16 @@ The matchBackground task matches the background of each coadd temp exposure to t
 \begin{description}
 \item[Inputs] A list of dataRefs  pointing to {\tt coaddTempExp}s and an optional dataRef to the reference exposure. 
 \item[Outputs]  Return a struct of a list of struct containing:
-\begin{itemize}
-\item backgroundModel: an afw.math.Approximate or an afw.math.Background. (Or {\tt None} if fit failed. 
-\item fitRMS: rms of the fit,  sqrt(mean(residuals**2)).
-\item matchedMSE: the MSE of the reference and matched images, mean((refImage - matchedSciImage)**2);   should be comparable to the mean variance of the difference image.
-\item  diffImVar: the mean variance of the difference image.
-\end {itemize}
+
+-- backgroundModel: an afw.math.Approximate or an afw.math.Background. (Or {\tt None} if fit failed. 
+
+-- fitRMS: rms of the fit,  sqrt(mean(residuals**2)).
+
+-- matchedMSE: the MSE of the reference and matched images, mean((refImage - matchedSciImage)**2);   should be comparable to the mean variance of the difference image.
+
+--  diffImVar: the mean variance of the difference image.
+
+
 \end{description}
 
 Detailed Processing Steps: \comment{can be removed if too much detail}
@@ -822,13 +848,9 @@ works. One source of such data is PSF-matched coadd temp exposures. \comment{pla
 
 \subsection{Metrics and Testing Tools}
 
-\begin{itemize}
-\item To test the quality of fit in the background matching step, 
-{\tt matchBackgrounds} contains a debugging method that plots the residuals of the fit.  In addition, the statistics returned for each fit (MSE and variance of the difference image) allow assessment of the interpolation styles/parameters.
-\item PipeQA
-\end{itemize}
+-- To test the quality of fit in the background matching step, {\tt matchBackgrounds} contains a debugging method that plots the residuals of the fit.  In addition, the statistics returned for each fit (MSE and variance of the difference image) allow assessment of the interpolation styles/parameters.
 
-
+-- PipeQA
 
 %%%%%%%
 
@@ -846,34 +868,40 @@ With the outputs of the process coadd task we can also answer questions like:
 \end{enumerate}
 
 \subsection{Inputs}
-\begin{itemize}
-\item Coadd exposure
-\end{itemize}
+
+-- Coadd exposure
+
 
 \subsection{outputs}
-\begin{itemize}
-\item Coadd calexp
-\item Coadd exposure metadata
-\item Background model
-\item PSF model
-\item Source catalog
-\end{itemize}
+
+-- Coadd calexp
+
+-- Coadd exposure metadata
+
+-- Background model
+
+-- PSF model
+
+-- Source catalog
 
 \subsection{Calibrate/Detect/Measure subTasks}
 These are identical to those mentioned in \S \ref{processccdsec}.
 
 \subsection{Issues}
-\begin{itemize}
-\item What is the optimal grid for background estimation
-\item Deblending radius
-\item Use image variance or per pixel variance
-\item Measurement with color dependent PSF
-\end{itemize}
+
+-- What is the optimal grid for background estimation
+
+-- Deblending radius
+
+-- Use image variance or per pixel variance
+
+-- Measurement with color dependent PSF
 
 \subsection{New Development Tasks}
 There is no notion of persisting models for QA purposes alone.  For example we will want to persist
 the WCS we measure, but only for comparing to the skymap WCS.  In other words, we do not want to replace the 
-WCS but we do want to measure it.
+WCS but we do want to measure it.  Patch information needs to be persisted in the coadd database table
+for ImageDifferencingTask.
 
 \subsection{Tuning Parameters}
 
@@ -886,8 +914,11 @@ design specs.
 \clearpage 
 \section{ImageDifferenceTask \label{sec-imagedifftask}} \becker
 
+
+Science evaluation in different conditions: as a function of seeing, S/N, airmass, rotation angle, filter, position on the focal plane, ?position in the tract? (should not matter), SED of star or galaxy, sensitivity to false positives due to moving objects.
+
 The ImageDifferenceTask subtracts a template image that is
-Psf--matched to an input science image, from that science image.  The
+warped and Psf--matched to an input science image, from that science image.  The
 image difference (or difference image) will contain only those objects
 that have varied in position or brightness w.r.t. the template.
 Detection and measurement will be run on the difference image to
@@ -899,8 +930,7 @@ SourceMeasurementTask.
 In detail, the bounding box of a given input {\tt calexp} will be used
 to query the Coadd database via the ImageDifferenceTask.getTemplate
 method.  The multiple SkyMap patches that overlap this bounding box
-will be assembled into a single Exposure.  This mosaiced coadd
-(a.k.a. the ``template'') is assumed to have a constant Psf.  All
+will be assembled into a single Exposure.  All
 subsequent pixel operations -- astrometric registration and
 Psf--matching -- will happen on this template, leaving the {\tt
   calexp} pixels untouched.  This may in some cases result in
@@ -911,13 +941,10 @@ research task for W13.
 
 The Task next selects the objects to be used to Psf match the {\tt
   calexp} and template.  The code is currently configured to use a
-starSelectorRegistry ``second moment'' star selector, the native {\tt
-  ip\_diffim} object selection code having been deprecated.  A
-catalog--based star selector is envisioned as a longer--term solution
-that returns objects that are known to be non--variable and have
-negligible proper motion.  Selection is run using the template image,
+starSelectorRegistry ``second moment'' star selector; the type of selector is configurable.  
+Selection is run using the template image,
 since this is likely to have higher signal--to--noise, and no
-astrophysical transients.  In a subsequent step, objects with Mask
+astrophysical transients.  Objects with Mask
 bits in either image (set in the Config, currently ``EDGE'' and
 ``SAT'') are removed from the returned Source catalog.
 
@@ -929,8 +956,7 @@ be tuned on sample runs for W13.  The overall number of bases becomes
 inflated by multiplying each basis with a set of Hermite--polynomials.
 The number of bases ultimately used will be determined in
 pre--production by using a principled means of deciding how much
-information each basis contributes to the solution.  The Bayesian
-Information Criterion provides one such means.
+information each basis contributes to the solution.  
 
 The internals of the ImagePsfMatchTask solve for $K(x,y)$ in the
 equation $S(x,y) = (K \otimes T)(x,y)$, where $S$ is the science
@@ -961,7 +987,7 @@ configured to find sources of both positive and negative polarity.
 SourceDeblendTask is currently disabled in measurement.  Finally,
 SourceMeasurementTask will be performed on the difference image source
 catalog, using the aperture correction from the science image.  We
-will run an instance of a DipoleChecker class to search for and flag
+will run a DipoleChecker to search for and flag
 dipoles.  The results will be persisted as DiaSources.  We require a
 new subTask that associates these DiaSources with the reference
 catalog {\it and} the {\tt calexp} source catalog, to assess where the
@@ -1006,21 +1032,22 @@ search for objects of both positive and negative polarity.  Estimation
 and re--estimation of the background will both be disabled.
 
 \subsection{SourceDeblendTask subTask}
-This subTask by default is turned off.
+This subTask by default is turned off as it has not been tested on detections
+with both positive and negative polarity.
 
 \subsection{SourceMeasurementTask subTask}
 As described above, this subTask performs measurement of the source
 catalog returned by SourceDetectionTask.  It requires the aperture
 correction of the {\tt calexp}.
 
-\subsection{Issues}
+\subsection{Evaluation and Development}
 
 -- We do not have color--dependent Psf--matching kernels,
 e.g. $K(x,y,g-r)$, which are needed in the presence of differential
 chromatic refraction.  This will impact the quality of the
 Psf--matching happening in ImagePsfMatchTask, in particular for
 objects of extreme color in the bluer passbands, and at high airmass.
-We will first investigate the fitting of $K(x,y)$ in the absence of
+We will first evaluate the fitting of $K(x,y)$ in the absence of
 DCR by operating on $i$--band data, and estimate the degradation in
 the quality of the solution when going to $g$--band.  Mitigation
 strategies include creation of templates at different airmasses, but
@@ -1052,9 +1079,6 @@ depth we may detect to in the difference image.
 -- We will turn off the majority of the measurements for the star
 selection, in the interest of speed.
 
-
-\subsection{New Development Tasks}
-
 -- Tune the heuristic that selects the shapes of the Gaussians based
 on the FWHM of the {\tt calexp} and the template.
 
@@ -1078,12 +1102,10 @@ latter also requires a new table in the database.
 
 -- Debug ingest of the DiaSources into MySQL.
 
--- Investigate RHL's option to pre--convolve.
+-- Evaluate RHL's option to pre--convolve.
 
 -- Stretch goal: develop Gaussian Processes based interpolation and
 evaluate against polynomial interpolation
-
-\subsection{Tuning Parameters}
 
 -- Tune the heuristic that chooses the shapes of the Kernel basis
 based on the input FWHMs.
@@ -1181,11 +1203,13 @@ database ingestion, however.  The steps for the different phases of ingestion wi
 -- Logging is done purely by printing to stdout, so it is possible to miss failures.  We need to evaluate other loggin options.
 
 \subsection{Metrics and Testing Tools}
-\begin{itemize}
-\item Tool to monitor ingestion rate (and predict finish time?).
-\item Tool for determining missing data/failures
-\item Tool for streamlining the merge process after parallel ingest.
-\end{itemize}
+
+-- Tool to monitor ingestion rate (and predict finish time?).
+
+-- Tool for determining missing data/failures
+
+-- Tool for streamlining the merge process after parallel ingest.
+
 %%%%%%%
 
 \clearpage 
@@ -1320,83 +1344,4 @@ $DATAREL_DIR/bin/ingest/ingestSources.py [lsstSim]
 %%%%%%%
 
 \end{document}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-% Move the stuff below to above
-
-%%%%%%%
-\subsection{IsrTask (for ImSim)} \simon
-Since there is no structure in the overscan, I do not believe we need
-to do anything but the default for ISR.  That means overscan, bias,
-flatfield, Cr interpolation, saturation and bad pixel corrections.
-Right now the default for ImSim Isr is doDark=True.  This should be
-fixed to reflect the fact that we no longer need dark correction with
-the current model.
-
-\subsubsection{What will be persisted}
-In production we will only keep {\tt calexp}.  This means no {\tt
-  postIsrCcd} will be persisted.  The Configs are automatically
-persisted with the IsrTask.  Metadata to persist include: 
-\begin{itemize}
-\item nCR : the number of cosmic rays
-\item median : the median of the calexp
-\item image : 
-\item gain : 
-\item run time : 
-\end{itemize}
-
-\subsubsection{What is the processing time for ISR per Ccd}
-The processing time is $\sim~1$ min per Ccd.
-
-\subsubsection{What is the default Config for ISR}
-\begin{python}
---config
-doIsr=True
-isr.doDark=False
-\end{python}
-
-
-\subsubsection{Which reference catalog will be used for the astrometry}
-
-\subsubsection{Who will define it and create it from the sims}
-This has been done based on the W13 surveys proposed on:
-http://dev.lsstcorp.org/trac/wiki/ImSim/Summer2012Plan
-
-\subsubsection{What depth is required for the reference catalog}
-There is no reason to not go to 28$^{th}$ magnitude.  It's not that
-big of an area.
-
-\subsubsection{What format (and what processes) are required for the reference catalog}
-This is very manual at the moment.  It would be nice to be able to
-provide a CSV and schema to a routine that would produce both the
-astrometry.net indexes and the match reach refObject.csv file.
-
-\subsubsection{What metadata do we need to persist}
-Metrics include: was the Wcs updated or did it default to the incoming
-Wcs due to fitting failures; what is the RMS of the astrometric model
-that was successfully fitted to the data.
-
-\subsubsection{What is the default Config for AstrometryTask}
-\begin{python}
---config
-...
-\end{python}
-
-
-
 
