@@ -546,8 +546,7 @@ In the coadd process, it is important that the background matcher not try to fit
 This subTask first undertakes the Psf--matching of the input {\tt
   calexp} Psf to that desired for the Coadd.  It then astrometrically
 warps this Psf--matched image to the astrometric footprint of the
-Coadd.  The Psf--matching happens through the ModelPsfMatchTask
-subTask.  This differs from ImagePsfMatchTask, described in detail in
+Coadd.  This differs from ImagePsfMatchTask, described in detail in
 Section~\ref{sec-imagedifftask}, in one major detail.  In this case,
 the {\tt calexp's} {\it model} Psf is read through the butler, and
 compared to the idealized Psf that we wish to realize for the Coadd.
@@ -564,49 +563,23 @@ assumed to have a constant weight.
 
 \subsection{Evaluation and Development}
 
--- Science images are presently Psf--matched to a model that is constant in pixel space.
-However, we want to match to a model Psf that is constant on the sky. We worry that the
-distortion near the edge of the LSST's field of view may be large enough
-that this distinction will prove significant. Jim Bosch is working on code
-that will eliminate this issue by allowing us to warp model Psfs.
-However, it is likely that we will produce some preliminary data before this new code is ready.
+-- Improve the current Science\_Ccd\_Exposure table and SelectImagesTask.
+The only measure of image quality that Science\_Ccd\_Exposure contains is Psf FWHM.
+We would like additional information such as Psf ellipticity, airmass and sky brightness.
 
--- If the model--to--model Psf--matching kernel is too big, we have
-too few pixels to constrain the solution.
+-- Develop an equation that computes a single measure of quality
+based on these various bits of information.
 
--- If the model--to--model Psf--matching kernel is too small, it
-limits the FWHM of the desired Psf of our coadd (otherwise the stars
-become boxy on the scale of the kernel).
+{\bf ScaleZeroPointTask}
 
--- If there is a limitation on the FWHM of the coadd Psf, we are
-limited in the number of images we may use with (FWHM$_i$ $<$
-FWHM$_{Coadd}$), impacting our final depth.
+--  Fit a 2-D spline to the zeropoints calculated for each ccd in {\tt processCcd}.   {\tt afw} already contains 2-D spline capabilities, however the only interface at the moment is the {\tt background} class. The API to the background class only accepts an image. We need to extend this  to be able to accept a list of grid points.   
 
--- If we wish to increase our depth and include images in the coadd
-with (FWHM$_i$ $>$ FWHM$_{Coadd}$), we will have to deconvolve.
+-- As a stretch goal, interpolate the scale factor across the patch using the zeropoint of each star. This is an appropriate application for a Gaussian Process/Kriging function. 
 
--- We need to understand ``how much'' deconvolution the code can handle,
-both in terms of the fraction of images that were deconvolved, and the
-degree to which each of the images is deconvolved.
+{\bf WarpAndPsfMatchTask}
 
--- We do not have color-dependent Psfs.  This will be minimized by
-analysis of $i$--band data, and explored in analysis of $g$--band
-data.
-
--- The process of Psf--matching first, and then warping to the Coadd
-footprint, may fail to represent the true shape of the Coadd Psf (in
-pixel space) near the edges of tracts.
-
--- The {\tt meas\_mosaic} package, which is a port of HSC's \"{u}ber
-cal, is necessary to correct known deficiencies in LSST's {\tt
-  meas\_astrom} package.  This has proven necessary for creation of
-non--smeared coadded images, reducing the RMS of the astrometric fit
-by a factor of two.  This is leading to an additional systematic
-component equivalent to {\bf XXX} in coadded images, and will vary
-spatially.
-
-There is trade--off in this process that needs to be explored in
-detail during W13.  To illustrate this, we define the dimensions of
+-- There is trade--off in this process that we will explore in detail.  
+To illustrate this, we define the dimensions of
 the {\tt calexp} Psf as $P \times P$, the FWHM of the Coadd Psf as
 $C$, and the dimensions of the Psf--matching kernel as $K \times K$.
 When fitting for the matching Kernel, each Psf image gets convolved
@@ -624,49 +597,60 @@ the {\tt calexp} Psf model $P$, which in turn sets the maximum size of
 the kernel such that $(P-K) \times (P-K)$ provides sufficient ability
 to constrain all of the Kernel basis coefficients, which in turn sets
 the size of the Psf $C$ we may match to without sufficiently impacting
-the shapes of the stars.  This trade--off, including the definitions
+the shapes of the stars, which in turn sets the number of images that we 
+may include in the coadd without deconvolving.  This trade--off, including the definitions
 of ``sufficient'' above, will be explored in thorough detail in W13
 pre--production.
 
-When choosing the desired FWHM of the Coadd, we will use the
-distribution of FWHM of the input data.  Typically this comes from the
-second or third quartile of the distribution; if we choose too narrow
-of a FWHM to make a ``good seeing'' coadd, either we convolve the
-smaller fraction of the data whose FWHM are less than the target, or
-we deconvolve some fraction of the data.  The degree to which
-deconvolution of the input images helps or hurts the salient qualities
-of the coadd (depth, noise, and Psf) have not been fully explored in
-detail.
+%-- If the model--to--model Psf--matching kernel is too big, we have
+%too few pixels to constrain the solution.
 
--- Evaluate the trade--offs between Psf size, kernel size, and FWHM
-of the Coadd.
+%-- If the model--to--model Psf--matching kernel is too small, it
+%limits the FWHM of the desired Psf of our coadd (otherwise the stars
+%become boxy on the scale of the kernel).
 
--- Establish how the Psf, depth, and variance of the coadd respond to
-the amount of deconvolution, both in terms of the number of
-deconvolved images, and the degree of deconvolution.
+%-- If there is a limitation on the FWHM of the coadd Psf, we are
+%limited in the number of images we may use with (FWHM$_i$ $<$
+%FWHM$_{Coadd}$), impacting our final depth.
 
--- We want to be able to warp model Psfs, to improve the quality of our Psf matching.
+%-- If we wish to increase our depth and include images in the coadd
+%with (FWHM$_i$ $>$ FWHM$_{Coadd}$), we will have to deconvolve.
 
--- The current Science\_Ccd\_Exposure table and SelectImagesTask need improvement.
-The only measure of image quality that Science\_Ccd\_Exposure contains is Psf FWHM.
-We would like additional information such as Psf ellipticity, airmass and sky brightness.
-In addition, we plan to develop an equation that computes a single measure of quality
-based on these various bits of information.
+-- Understand ``how much'' deconvolution the code can handle,
+both in terms of the fraction of images that were deconvolved, and the
+degree to which each of the images is deconvolved, using the measured 
+depth, variance, and Psf in the Coadd.
 
---  Extend the ZeroPointScalerTask to fit a 2-D spline to the zeropoints calculated for each ccd in {\tt processCcd}.   {\tt afw} already contains 2-D spline capabilities, however the only interface at the moment is the {\tt background} class. The API to the background class only accepts an image. We need to extend this  to be able to accept a list of grid points.   As a stretch goal, we can  interpolate the scale factor across the patch using the zeropoint of each star. This is an appropriate application for a Gaussian Process/Kriging function. 
+-- Establish the quartiles of the FWHM distribution to use for setting the Coadd Psf, 
+and for including in the Coadd.
 
-We will need to test the following Psf--matching configs:
+-- Establish the impact of {\it not} having color--dependent Psfs (or Psf--matching kernels) on the coadd.
 
--- Psf size (set in processCcd)
+-- Science images are presently Psf--matched to a model that is constant in pixel space.
+However, we want to match to a model Psf that is constant on the sky.  The
+distortion near the edge of the LSST's field of view may be large enough
+that this distinction will prove significant. Jim Bosch is working on code
+that will eliminate this issue by allowing us to warp model Psfs.
+However, it is likely that we will produce some preliminary data before this new code is ready.
 
--- Psf grid 
+-- Understand the impact of the {\tt meas\_mosaic} package, which is a port of HSC's \"{u}ber
+cal, and is necessary to correct known deficiencies in LSST's {\tt
+  meas\_astrom} package.  This has proven necessary for creation of
+non--smeared coadded images, reducing the RMS of the astrometric fit
+by a factor of two.  
 
--- Psf model functions
-
--- kernel size
-
-We will need to tune our image selection criteria (possibly including our image quality metric)
-to select suitable images.
+%We will need to test the following Psf--matching configs:
+%
+%-- Psf size (set in processCcd)
+%
+%-- Psf grid 
+%
+%-- Psf model functions
+%
+%-- kernel size
+%
+%We will need to tune our image selection criteria (possibly including our image quality metric)
+%to select suitable images.
 
 \subsection{Metrics and Testing Tools}
 
@@ -674,13 +658,12 @@ to select suitable images.
 kernel as a function of Psf dimension and Kernel dimension by tracking
 the condition number of the solution.
 
--- The Psf shape, noise properties, and photometric depth of the coadd
-will be used to determine the impacts of deconvolution.
+-- Use the Coadd Psf shape, noise properties, and photometric depth 
+to determine the impacts of deconvolution.
 
--- It would be nice to be able to evaluate how well the new image quality metric
-works. That would allow us to improve the metric. However, we expect this equation
-to have a fairly shallow minimum and to not be easily testable, so we may well end up
-with heuristic that seems to be good enough.
+-- Examine the shapes of extreme--color stars in the Coadd to understand the effects of DCR.
+
+-- Evaluate the image quality metric developed for SelectImagesTask.
 
 %%%%%%%
 
