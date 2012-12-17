@@ -411,6 +411,8 @@ The measure task makes the statistical measurements on each footprint (or peak i
 
 \subsection{Evaluation and Development}
 
+-- define appropriate configurations for ImSim (including which config
+parameters can be turned on and off).
 %-- A primary issue is which steps in processCcd can be turned off.  In
 %our experience with Stripe82, we found that the products produced by
 %essentially all steps were necessary in later processes.  The one
@@ -423,9 +425,9 @@ The measure task makes the statistical measurements on each footprint (or peak i
 {\bf ImSim IsrTask}\\
 -- Assemble amps in readout order (serial transfer direction is along the x-axis of the image).
 
--- Apply the bad pixel masks prior to saturation detection (requires
-generation of bad pixel masks in amplifier coordinates as opposed to
-CCD coordinates)
+%-- Apply the bad pixel masks prior to saturation detection (requires
+%generation of bad pixel masks in amplifier coordinates as opposed to
+%CCD coordinates)
 
 %Saturation detection is done before bad pixel masking because we have the pixel masks in Ccd coordinates.
 %This meant that some bad pixels were also marked as SAT.  We fix this by changing all SAT+BAD pixels back to just BAD
@@ -502,11 +504,14 @@ determination and the configuration parameters.
 -- Determine appropriate  aperture sizes for aperture corrections%; the default is too small.
 
 {\bf DeblendTask}\\
--- Establish the deblending radius.
+-- Define appropriate deblending config
+
+%-- Establish the deblending radius.
 %what is this?
 
 {\bf MeasurementTask}\\
--- Specify the galaxy shape parameters that will be measured.
+-- Define appropriate measurement config (e.g. galaxy shape measurements)
+%-- Specify the galaxy shape parameters that will be measured.
 
 \subsection{Metrics and Testing Tools}
 
@@ -532,33 +537,50 @@ etc in the snap difference image.
 %\clearpage 
 \section{MakeSkyMapTask} 
 
-Creates a "sky map": a sky pixelization for Coadds consisting of a collection of overlapping "tracts".
-Each tract is, essentially, a very large exposure with its own WCS.
-Tracts are subdivided into rectangular overlapping subregions called "patches".
+Creates a "sky map": a sky pixelization for Coadds consisting of a
+collection of overlapping "tracts".  Each tract is, essentially, a
+very large exposure with its own WCS.  Tracts are subdivided into
+rectangular overlapping subregions called "patches".
 
-The sky map we plan to use is DodecaSkyMap. It has 12 tracts arranged as the faces of a dodecahedron.
-An alternative if we decide we want more smaller tracts is HealpixSkyMap which arranges
-tracts as pixels in a HEALPix arrangement.
+The sky map we plan to use is DodecaSkyMap. It has 12 tracts arranged
+as the faces of a dodecahedron.  An alternative if we decide we want
+more smaller tracts is HealpixSkyMap which arranges tracts as pixels
+in a HEALPix arrangement.
 
 \subsection{Input/Outputs}
+ Inputs are:
+--  input and (optionally) output data repository.
 
-As for all tasks, specify an input and (optionally) output data repository.
-makeSkyMap creates a sky map in the output repository.
-A repository may have two sky maps: one for "deep" Coadds and one for "goodSeeing" Coadds.
+Outputs are:
+
+-- a sky map in the output repository.
+-- a repository may have two sky maps: one for "deep" Coadds and one for "goodSeeing" Coadds.
 
 \subsection{Evaluation and Development}
 
-DodecaSkyMap has large tracts which have significant distortion at the edges.
-We don't believe this will be an issue for image differencing because the template is warped
-to match the science exposure before subtracting. If it does prove to be a problem
-we can switch to using HealpixSkyMap with smaller tracts.
+-- Evaluate if the distortions at the edge of tracts for DodecaSkyMap
+impacts image differencing (e.g.\ due to variations in pixel size or
+requirements on the WCS) by modifying the tract boundaries to
+intersect with the ImSim data. 
 
-SkyMap unpersistence has been a bit troublesome due to pickling {\it pex\_config} fields.
+-- Determine if DodecaSkyMap or HealpixSkyMap is the appropriate sky
+map definition for W13
+
+-- For HealpixSkyMap, create healpy as an LSST package (healpy is
+self-contained other than needing cfitsio).
+
+-- SkyMap unpersistence has been a bit troublesome due to pickling {\it pex\_config} fields.
 When {\it pex\_config} changes sometimes this breaks SkyMap unpersistence. We must fix this eventually.
-I don't think it's a high priority, but we could try to fix it in time for late Winter2013 production.
+I don't think it's a high priority, but we could try to fix it in time
+for late Winter2013 production.
 
-None. If we do decide to switch to HealpixSkyMap then we must make healpy an LSST package.
-Healpy is self-contained other than needing cfitsio.
+%DodecaSkyMap has large tracts which have significant distortion at
+%the edges.  We don't believe this will be an issue for image
+%differencing because the template is warped to match the science
+%exposure before subtracting. If it does prove to be a problem we can
+%switch to using HealpixSkyMap with smaller tracts.
+
+
 
 The overlap between tracts may be larger than necessary, but the main effect of that
 will be to slightly increase storage requirements of Coadds and slightly increase
