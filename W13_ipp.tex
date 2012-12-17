@@ -570,6 +570,10 @@ We would like additional information such as Psf ellipticity, airmass and sky br
 -- Develop an equation that computes a single measure of quality
 based on these various bits of information.
 
+-- Develop a tool that measures how well Psf matching to a model Psf
+works. This requires running Psf modelling on a coaddTempExp.
+
+
 {\bf ScaleZeroPointTask}
 
 --  Fit a 2-D spline to the zeropoints calculated for each ccd in {\tt processCcd}.   {\tt afw} already contains 2-D spline capabilities, however the only interface at the moment is the {\tt background} class. The API to the background class only accepts an image. We need to extend this  to be able to accept a list of grid points.   
@@ -639,6 +643,8 @@ cal, and is necessary to correct known deficiencies in LSST's {\tt
 non--smeared coadded images, reducing the RMS of the astrometric fit
 by a factor of two.  
 
+-- Implement minimal spreading of Mask bits in afwMath::convolve.
+
 %We will need to test the following Psf--matching configs:
 %
 %-- Psf size (set in processCcd)
@@ -653,6 +659,8 @@ by a factor of two.
 %to select suitable images.
 
 \subsection{Metrics and Testing Tools}
+
+-- Develop tools to measure the Psf of the coaddTempExposure.
 
 -- Establish the stability of the model--to--model Psf--matching
 kernel as a function of Psf dimension and Kernel dimension by tracking
@@ -715,7 +723,6 @@ Outputs:
 
 -- diffImVar: the mean variance of the difference image.
 
-
 \subsection{Evaluation and Development}
 
 -- Development: Move flux-scaling procedure to {\tt makeCoaddTempExp.py}.  Currently, the assembleCoadd performs the flux-scaling step. This design was a temporary solution to an early-production problem.  It would be much more efficient and clean for the flux scaling to be performed in makeCoaddTempExp.
@@ -728,18 +735,9 @@ Outputs:
 
 -- Development (out of scope): Write a task that will select a reference run based on the database that optimizes continuity over a large region of the sky. By large region, we mean $>>$ patch. 
 
--- Spreading of Mask bits.  \comment{placeholder?}
-
--- We need a tool that measures how well Psf matching to a model Psf
-works. One source of such data is Psf-matched coadd temp exposures. \comment{placeholder? Look like it should go in the makeCoaddTempExp evaluation section, because psfMatching is described there}
-
--- \comment{This is covered in the makeCoaddTempExp section:  'How do we define the selection criteria, and select, input and reference images from the database.?' }
-
 \subsection{Metrics and Testing Tools}
 
 -- To test the quality of fit in the background matching step, {\tt matchBackgrounds} contains a debugging method that plots the residuals of the fit.  In addition, the statistics returned for each fit (MSE and variance of the difference image) allow assessment of the interpolation styles/parameters.
-
--- PipeQA
 
 %%%%%%%
 
@@ -776,22 +774,23 @@ These are identical to those mentioned in \S \ref{processccdsec}.
 
 \subsection{Evaluation and Development}
 
--- What is the optimal grid for background estimation
+-- Establish the optimal grid spacing for background estimation.
 
--- Deblending radius
+-- Determine the deblending radius.
 
--- Use image variance or per pixel variance
+-- Establish to use image variance or per pixel variance for the detection threshold.
 
--- Measurement with color dependent Psf
+-- Determine the accuracty of measurement without a color dependent Psf.
 
-There is no notion of persisting models for QA purposes alone.  For example we will want to persist
+-- Ingest the appropriate patch information in the coadd database table for ImageDifferencingTask.
+
+-- There is no notion of persisting models for QA purposes alone.  For example we will want to persist
 the WCS we measure, but only for comparing to the skymap WCS.  In other words, we do not want to replace the 
-WCS but we do want to measure it.  Patch information needs to be persisted in the coadd database table
-for ImageDifferencingTask.
+WCS but we do want to measure it.  
 
 \subsection{Metrics and Testing Tools}
-Means to compare fitted zeropoint, Psf, and Wcs of coadd with the
-design specs.
+
+-- Use PipeQA to compare fitted zeropoint, Psf, and Wcs of Coadd with the design specs.
 
 %%%%%%%
 
