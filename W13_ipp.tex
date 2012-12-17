@@ -92,7 +92,7 @@ Configs for each Task.
 %%%%%%%
 
 \begin{sidewaysfigure}
-\includegraphics[width=\textwidth]{Figures/Winter_2013.png}
+\includegraphics[width=\textwidth]{Figures/Winter_2013.eps}
 \caption{Flow of primary information in image differencing. Brown
   boxes are input data, blue boxes represent the database, yellow
   represent ingestion into the database. Grey-brown boxes are derived
@@ -129,8 +129,8 @@ airmass and time described below all result in data sets of at least
 
 \begin{figure}
 \centerline{
-\includegraphics[width=0.4\textwidth]{Figures/depth_g.png}\hfil
-\includegraphics[width=0.4\textwidth]{Figures/depth_i.png}
+\includegraphics[width=0.4\textwidth]{Figures/depth_g.eps}\hfil
+\includegraphics[width=0.4\textwidth]{Figures/depth_i.eps}
 }
 \caption{The pointing depth map (including dithers) for the 5yr data for the g (left panel)
  and i (right panel)  passbands.}
@@ -140,9 +140,9 @@ airmass and time described below all result in data sets of at least
 
 \begin{figure}
 \centerline{
-\includegraphics[width=0.3\textwidth]{Figures/airmass_mjd.png}\hfil
-\includegraphics[width=0.3\textwidth]{Figures/sky_mjd.png}\hfil
-\includegraphics[width=0.3\textwidth]{Figures/seeing.png}
+\includegraphics[width=0.3\textwidth]{Figures/airmass_mjd.eps}\hfil
+\includegraphics[width=0.3\textwidth]{Figures/sky_mjd.eps}\hfil
+\includegraphics[width=0.3\textwidth]{Figures/seeing.eps}
 }
 \caption{The airmass, sky brightness, and seeing as a function of MJD for the
   5yr data in the g (blue points) and i (red points) passbands.}
@@ -159,7 +159,7 @@ negligible ($i$--band) and one where the chromatic effects are
 expected to be substantial ($g$--band).
 
 We accomplish this with a series of data sets drawn from the 5yr
-simulations. We define a baseline data as the central CCD, in the $i$
+simulations. We define a baseline data as the central Ccd, in the $i$
 band, at low airmass, and for a set of observations spread
 over 30 days.  This will serve as the reference set that maps out the
 performance of the algorithms relative to the optical design of the
@@ -180,7 +180,7 @@ band are $<$0.6 pixels and $<$0.4 pixels respectively. Baseline runs
 will, therefore, be defined in the $i$--band at airmass $<$1.15.
 
 \begin{figure}
-\centerline{\includegraphics[width=0.8\textwidth]{Figures/DCR_R_stars.png}}
+\centerline{\includegraphics[width=0.8\textwidth]{Figures/DCR_R_stars.eps}}
 \caption{The differential chromatic diffraction relative to a G5V star
   as a function of airmass. The left panel shows the positional offset
   for the $g$ band and the right panel the $i$ band. In both panels
@@ -193,20 +193,20 @@ will, therefore, be defined in the $i$--band at airmass $<$1.15.
 \begin{tabular}{llcrrr}
 Sample & Device & Filter & Exposures & airmass & time interval \\
 \hline  
-Baseline CCD             & central         & $i$  & 20 & $<$1.15 &$<$30 days \\
+Baseline Ccd             & central         & $i$  & 20 & $<$1.15 &$<$30 days \\
 Baseline Raft              & central raft  & $i$  & 20 & $<$1.15 &$<$30 days \\
 Baseline Focal Plane   & focal plane  &  $i$ & 20 & $<$1.15 &$<$30
 days \\
 \hline  
-Color CCD             & central         & $g$  & 20 & $<$1.15 &$<$30 days \\
+Color Ccd             & central         & $g$  & 20 & $<$1.15 &$<$30 days \\
 Color Raft              & central raft  & $g$  & 20 & $<$1.15 &$<$30 days \\
 Color Focal Plane   & focal plane  &  $g$ & 20 & $<$1.15 &$<$30 days \\
 \hline 
-Time CCD             & central         & $i$  & 20 & $<$1.15 &$>$3 years \\
+Time Ccd             & central         & $i$  & 20 & $<$1.15 &$>$3 years \\
 Time Raft              & central raft  & $i$  & 20 & $<$1.15 &$>$3 years \\
 Time Focal Plane   & focal plane  &  $i$ & 20 & $<$1.15 &$>$3 years \\
 \hline 
-DCR CCD             & central         & $g$  & 20 & $>$1.3 &$<$30 days \\
+DCR Ccd             & central         & $g$  & 20 & $>$1.3 &$<$30 days \\
 DCR Raft              & central raft  & $g$  & 20 & $>$1.3 &$<$30 days \\
 DCR Focal Plane   & focal plane  & $g$  & 20 & $>$1.3 &$<$30 days
 \end{tabular}
@@ -276,7 +276,7 @@ production.
 
 %%%%%%%
 
-\clearpage 
+%\clearpage 
 \section{CreateCalibrationProductsTask} 
 This task takes individual calibration frames and combines them into
 high signal to noise master frames.  We will run: masterbias, masterdark, masterflat.  
@@ -315,13 +315,13 @@ The individual calibration frames are combined into a single high signal to nois
 
 %%%%%%%
 
-\clearpage 
+%\clearpage 
 \section{ProcessCcdTask\label{processccdsec}} 
 The ProcessCcdTask does the work required to take input data from raw form all the way to a calibrated and
 photometered science image.  The ProcessImageTask task is subclassed with camera specific configs and processing, but the overall 
 work flow is first to do the instrument signature removal step which is handled by the camera specific subclass.  For ImSim
 data, there is an additional step of combining the individual snap images before the rest of processing happens. Next calibration
-is run.  This measures the Psf and aperuture correction, and also does the photometric and astrometric calibration.  
+is run.  This measures the Psf and aperture correction, and also does the photometric and astrometric calibration.  
 Detection comes next.  After detection, footprints are deblended.
 Finally measurement is run on the deblended footprints.  Most of the above steps are optional, but care should be taken
 when turning any one off that it does not affect down stream processing.
@@ -383,12 +383,12 @@ The measure task makes the statistical measurements on each footprint (or peak i
 \subsection{Evaluation and Development}
 
 -- A primary issue is which steps in processCcd can be turned off.  In our experience with Stripe82, we found that the products produced by
-essentially all steps were necessary in later processes.  The one possible exception was the deblendTask.  Aperture corrections (CalibrateTask) 
+essentially all steps were necessary in later processes.  The one possible exception was the DeblendTask.  Aperture corrections (CalibrateTask) 
 are needed by forced photometry, zeropoints (CalibrateTask)
-are needed by pipeQA and makeCoaddTask, and detection planes (DetectTask) are needed by the background matching tasks.
+are needed by pipeQA and AssembleCoaddTask, and detection planes (DetectTask) are needed by the background matching tasks.
 
 {\bf ImSim IsrTask}\\
--- Saturation detection is done before bad pixel masking because we have the pixel masks in CCD coordinates.
+-- Saturation detection is done before bad pixel masking because we have the pixel masks in Ccd coordinates.
 This meant that some bad pixels were also marked as SAT.  We fix this by changing all SAT+BAD pixels back to just BAD.
 
 -- The flats had per chip normalizations meaning that the zeropoint was not fixed for the focal plane.  This should be
@@ -419,7 +419,7 @@ problem.
 Given the prior expectation that the matching Kernel will look like a delta function, 
 this basis set will be smaller than the default ImagePsfMatchTask set (31 terms).
 
--- Decide between the two bases in the final SnapCombineTask Conig.
+-- Decide between the two bases in the final SnapCombineTask Config.
 
 -- Establish sufficient dimensions for the Psf--matching kernel, since again
 the power is expected to be localized.
@@ -430,7 +430,7 @@ contaminant, the cores of bright stars.
 -- Develop tools to query the known cosmic ray list (locations, shapes and amplitudes), 
 and associate them with DiaSources.
 
--- Devlop tools to query the known star list, and associate them with DiaSources.
+-- Develop tools to query the known star list, and associate them with DiaSources.
 
 -- Develop cuts on measurement features to distinguish cosmics from
 stellar cores in the Snap DiaSources.
@@ -442,7 +442,7 @@ the metadata to be summed (e.g. exposure time), averaged (e.g. TAI of exposure),
 and assumed to be the same (e.g. Wcs).
 
 {\bf CalibrateTask}\\
--- Determine an optimial background grid size; there are several of these in the config
+-- Determine an optimal background grid size; there are several of these in the config
   and we must understand what each one does.
 
 -- Determine the aperture sizes for aperture corrections; the default is too small.
@@ -463,7 +463,7 @@ sample as metrics to optimize.
 
 %%%%%%%
 
-\clearpage 
+%\clearpage 
 \section{MakeSkyMapTask} 
 
 Creates a "sky map": a sky pixelization for Coadds consisting of a collection of overlapping "tracts".
@@ -489,7 +489,7 @@ we can switch to using HealpixSkyMap with smaller tracts.
 
 SkyMap unpersistence has been a bit troublesome due to pickling {\it pex\_config} fields.
 When {\it pex\_config} changes sometimes this breaks SkyMap unpersistence. We must fix this eventually.
-I don't think it's a high priority, but we could try to fix it in time for late Winter2012 production.
+I don't think it's a high priority, but we could try to fix it in time for late Winter2013 production.
 
 None. If we do decide to switch to HealpixSkyMap then we must make healpy an LSST package.
 Healpy is self-contained other than needing cfitsio.
@@ -506,18 +506,18 @@ information about a sky map and displays a 3d graph of it.
 
 %%%%%%%
 
-\clearpage 
+%\clearpage 
 \section{MakeCoaddTempExpTask} 
 
 Suitable science images for coaddition will be selected based on Psf FWHM, 
-sky level, and photomeric zeropoint.  These images will then be Psf--matched to a model Psf and warped
+sky level, and photometric zeropoint.  These images will then be Psf--matched to a model Psf and warped
 to the WCS of the desired Coadd patch to produce a coadd temp exposure.
 The model Psf will be a circular double Gaussian
 function, with variable {\tt sigma1} reflecting the desired FWHM of the Coadd.  This will
 be chosen from the distribution of FWHM of the input data, third quartile for depth and second
 quartile for good seeing.
 
-All CCDs from a visit that overlap a particular patch are combined into one coadd temp exposure,
+All Ccds from a visit that overlap a particular patch are combined into one coadd temp exposure,
 so we will create one coadd temp exposure per patch per visit.
 These coadd temp exposures are later assembled into a Coadd by AssembleCoaddTask.
 
@@ -539,7 +539,7 @@ querying the Science\_Ccd\_Exposure table.
 
 This subTask  photometrically calibrates each {\tt coaddTempExp} to a common zero point. 
 %
-In the coadd process, it is important that the background matcher not try to fit discontinuous offsets in the background levels. For this reason, the multiplicative scale factor applied to the coaddTempExp should vary smoothly across the patch. For stripe-82 early production we assumed that the zero-point in the runs varied smoothly in the R.A direction only.  This will be expanded to a full two--dimensional model in W13.  The zeropoints are already calculated in {\tt processCcd} and stored in the Science\_Ccd\_Exposure table. {\tt ScaleZeroPointTask} pins the zeropoint down in the center of each ccd and interpolates a multiplicative scale factor across the patch. 
+In the coadd process, it is important that the background matcher not try to fit discontinuous offsets in the background levels. For this reason, the multiplicative scale factor applied to the coaddTempExp should vary smoothly across the patch. For stripe-82 early production we assumed that the zero-point in the runs varied smoothly in the R.A direction only.  This will be expanded to a full two--dimensional model in W13.  The zeropoints are already calculated in {\tt processCcd} and stored in the Science\_Ccd\_Exposure table. {\tt ScaleZeroPointTask} pins the zeropoint down in the center of each Ccd and interpolates a multiplicative scale factor across the patch. 
 
 \subsection{WarpAndPsfMatchTask subTask} 
 
@@ -571,12 +571,12 @@ We would like additional information such as Psf ellipticity, airmass and sky br
 based on these various bits of information.
 
 -- Develop a tool that measures how well Psf matching to a model Psf
-works. This requires running Psf modelling on a coaddTempExp.
+works. This requires running Psf modeling on a coaddTempExp.
 
 
 {\bf ScaleZeroPointTask}
 
---  Fit a 2-D spline to the zeropoints calculated for each ccd in {\tt processCcd}.   {\tt afw} already contains 2-D spline capabilities, however the only interface at the moment is the {\tt background} class. The API to the background class only accepts an image. We need to extend this  to be able to accept a list of grid points.   
+--  Fit a 2-D spline to the zeropoints calculated for each Ccd in {\tt processCcd}.   {\tt afw} already contains 2-D spline capabilities, however the only interface at the moment is the {\tt background} class. The API to the background class only accepts an image. We need to extend this  to be able to accept a list of grid points.   
 
 -- As a stretch goal, interpolate the scale factor across the patch using the zeropoint of each star. This is an appropriate application for a Gaussian Process/Kriging function. 
 
@@ -675,7 +675,7 @@ to determine the impacts of deconvolution.
 
 %%%%%%%
 
-\clearpage 
+%\clearpage 
 \section{AssembleCoaddTask} 
 
 The coadded template image will be constructed using background
@@ -685,7 +685,7 @@ The assembleCoadd task assumes that all {\tt coaddTempExp}s cannot fit in memory
 
 -- Read in {\tt coaddTempExp}s one at a time and fill a list of weights (inverse mean variance) for each image 
 
--- Pass to the background matching task a list of dataRefs of the {\tt coaddTempExp}s, and the reference exposure dataRef (if supplied).  Receive back a list of structs containing {\tt Background} objects and statistics describing the quality of the match.  Prune this list of exposures, removing the coaddTempExps for which the background-matching failed.  Current tests include too many nans, and the ratio MSE/Var did not make the quality threshold.
+-- Pass to the background matching task a list of dataRefIds of the {\tt coaddTempExp}s, and the reference exposure dataRefId (if supplied).  Receive back a list of structs containing {\tt Background} objects and statistics describing the quality of the match.  Prune this list of exposures, removing the coaddTempExps for which the background-matching failed.  Current tests include too many nans, and the ratio MSE/Var did not make the quality threshold.
 
 -- Grid the patch into a smaller sub-region {\tt subBBox}es. For each {\tt subBBox}, read in each image and keep in memory only the region that overlaps the {\tt subBBox}. Add the corresponding region from the Background match to bring the background level up to that of the reference image.  Coadd by calculating the mean with optional outlier rejection.  Repeat for {\tt next subBBox}.  Persist Coadd. 
 
@@ -710,13 +710,13 @@ Subtract the exposure from the reference exposure, and then pass generate an afw
 
 Inputs: 
 
--- A list of dataRefs  pointing to {\tt coaddTempExp}s and an optional dataRef to the reference exposure. 
+-- A list of dataRefIds  pointing to {\tt coaddTempExp}s and an optional dataRefId to the reference exposure. 
 
 Outputs:  
 
 -- backgroundModel: an afw.math.Approximate or an afw.math.Background (Or {\tt None} if fit failed) 
 
--- fitRMS: rms of the fit, sqrt(mean(residuals**2))
+-- fitRMS: RMS of the fit, sqrt(mean(residuals**2))
 
 -- matchedMSE: the MSE of the reference and matched images, mean((refImage - matchedSciImage)**2); 
    this value should be comparable to the mean variance of the difference image.
@@ -731,7 +731,7 @@ Outputs:
 
 -- Development:  Check that API of background matching task is appropriate for {\tt ImageDifferenceTask} to match the science image to the template before subtracting. 
 
--- Evaluation: Determine the optimal background matching style (polynomial, spline) and parameters (order, bin size) for the 4000$\times$4000 patches. Differences between stripe82 data and ImSim data (e.g. the chip gaps and offsets between CCDs) prevent us from simply reusing the parameters from early production.
+-- Evaluation: Determine the optimal background matching style (polynomial, spline) and parameters (order, bin size) for the 4000$\times$4000 patches. Differences between Stripe82 data and ImSim data (e.g. the chip gaps and offsets between Ccds) prevent us from simply reusing the parameters from early production.
 
 -- Development (out of scope): Write a task that will select a reference run based on the database that optimizes continuity over a large region of the sky. By large region, we mean $>>$ patch. 
 
@@ -741,7 +741,7 @@ Outputs:
 
 %%%%%%%
 
-\clearpage 
+%\clearpage 
 \section{ProcessCoaddTask} 
 We will be running calibration, detection and measurement on Coadds to 
 generate the data products necessary for QA and also to measure the Psf
@@ -780,9 +780,9 @@ These are identical to those mentioned in \S \ref{processccdsec}.
 
 -- Establish to use image variance or per pixel variance for the detection threshold.
 
--- Determine the accuracty of measurement without a color dependent Psf.
+-- Determine the accuracy of measurement without a color dependent Psf.
 
--- Ingest the appropriate patch information in the Coadd database table for ImageDifferencingTask.
+-- Ingest the appropriate patch information in the Coadd database table for ImageDifferenceTask.
 
 -- There is no notion of persisting models for QA purposes alone.  For example we will want to persist
 the WCS we measure, but only for comparing to the skymap WCS.  In other words, we do not want to replace the 
@@ -794,7 +794,7 @@ WCS but we do want to measure it.
 
 %%%%%%%
 
-\clearpage 
+%\clearpage 
 \section{ImageDifferenceTask \label{sec-imagedifftask}} 
 
 
@@ -917,7 +917,7 @@ yields a cleaner detection set.
 -- Tune the heuristic that establishes the shape of the Gaussians based upon
 the input FWHMs of the {\tt calexp} and the template.
 
--- Determine the overall basis size (number of Hermite polnomials) 
+-- Determine the overall basis size (number of Hermite polynomials) 
 required by using a principled means of deciding how much information each basis contributes to the solution.  
 Do so as a function of Psf FWHM and variation.
 
@@ -993,10 +993,10 @@ the visualization of the inputs and outputs to ImageDifferenceTask.
 
 %%%%%%%
 
-\clearpage 
+%\clearpage 
 \section{Database Ingestion} 
 This step is essentially a set of by hand operations.  
-There will be a sourceIngestionTask for W13.  This is only one aspect of the
+There will be a SourceIngestionTask for W13.  This is only one aspect of the
 database ingestion, however.  The steps for the different phases of ingestion will be:\\
 {\bf Registry Creation:}
 
@@ -1025,7 +1025,7 @@ database ingestion, however.  The steps for the different phases of ingestion wi
 -- Run ingestForcedSource.py
 
 \subsection{Evaluation and Development}
--- genInputRegistry.py takes ~10 min per visit to run.  With large amounts of data, this is intractable.  Evaluate the feasability of unifying parallel input registry generation.
+-- genInputRegistry.py takes ~10 min per visit to run.  With large amounts of data, this is intractable.  Evaluate the feasibility of unifying parallel input registry generation.
 
 -- Each of the above needs to be taskified and made so that it can be parallelized
 
@@ -1033,7 +1033,7 @@ database ingestion, however.  The steps for the different phases of ingestion wi
 
 -- After parallel ingest, the tables need to be merged and indexed which can take a long time.  We need to identify the optimal recipe for parallel ingest and evaluate the options for automating this process.
 
--- Logging is done purely by printing to stdout, so it is possible to miss failures.  We need to evaluate other loggin options.
+-- Logging is done purely by printing to stdout, so it is possible to miss failures.  We need to evaluate other logging options.
 
 \subsection{Metrics and Testing Tools}
 
@@ -1045,7 +1045,7 @@ database ingestion, however.  The steps for the different phases of ingestion wi
 
 %%%%%%%
 
-\clearpage 
+%\clearpage 
 \section{Summary} 
 
 The ``tall poles'' that will be evaluated in the development portion of production are:
@@ -1079,8 +1079,8 @@ ProcessCcdTask                & 110 sec + ?   & Ccd          & XXX             &
 ~~~~~~Calexp CDM              & 80 sec        & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~AstrometryTask          & 1 sec         & $\cdots$     & $\cdots$        &        &  \\
 MakeSkyMapTask                & 10 sec        & Skymap       & 1               &        &  \\
-MakeCoaddTempExpTask          & 180 min       & Visit-Patch  & XXX             &        & 79 CCDs \\
-AssembleCoaddTask             & 150 sec       & Patch        & XXX             &        & 9 coaddTEmpExp \\   
+MakeCoaddTempExpTask          & 180 min       & Visit-Patch  & XXX             &        & 79 Ccds \\
+AssembleCoaddTask             & 150 sec       & Patch        & XXX             &        & 9 coaddTempExp \\   
 ProcessCoaddTask              & ?             & Patch        & XXX             &        &  \\
 ImageDifferenceTask           & ?             & Ccd          & XXX             &        &  \\
 ~~~~~~ImagePsfMatchTask       &               & $\cdots$     & $\cdots$        &        &  \\
