@@ -405,7 +405,7 @@ The measure task makes the statistical measurements on each footprint (or peak i
 
 \subsection{Evaluation and Development}
 
--- define appropriate configurations for ImSim (including which config
+-- Define appropriate configurations for ImSim (including which config
 parameters can be turned on and off).
 %-- A primary issue is which steps in processCcd can be turned off.  In
 %our experience with Stripe82, we found that the products produced by
@@ -437,13 +437,16 @@ variation in PSF. Current simulations have a distribution of offsets
 with $>$70\% less than 0.1 pixels but with a 1\% tail extending to 0.6
 pixels.
 
--- Based on the evaluation of the sensitivity: implement Psf-matching
+-- Based on the evaluation of the sensitivity: implement Psf-matched
 image differencing.
 
 -- Evaluate the appropriate basis functions for psf-matching
-(including sum--of--Gaussian basis sets and  delta--function kernels),
-the spatial order for the interpolation of the kernels,  and the
-number of bases.
+(including sum--of--Gaussian basis sets and delta--function kernels),
+the spatial order for the interpolation of the kernels,  the
+number of bases, and the kernel dimensions.
+
+-- Develop tools to distinguish cosmic rays from the most significant
+Snap DiaSource contaminant, the cores of bright stars.  
 
 -- Establish the metadata to be summed (e.g. exposure time), averaged
 (e.g. TAI of exposure), and assumed to be the same (e.g. Wcs).
@@ -508,16 +511,19 @@ determination and the configuration parameters.
 
 \subsection{Metrics and Testing Tools}
 
--- CR detection, deblending and  will be evaluated by cross matching
-to known sources (variables and cosmic rays)  within the reference
+-- CR detection and deblending will be evaluated by cross matching
+to known sources (variables and cosmic rays) within the reference
 catalog or database.
 
 -- Debug tools to associate catalog sources (and measured attributes)
 with processed images will be implemented as required
 
 -- Evaluation of the snap combine will be undertaken using the
-statistics package and by comparing MSE, numbers of false detections
-etc in the snap difference image.
+cross--match of DiaSources with the cosmic ray list, and with the
+known star list.
+
+%statistics package and by comparing MSE, numbers of false detections
+%etc in the snap difference image.
 
 %Evaluate the cross--match the list of DiaSources  with the cosmic ray list, and 
 %with the known star list.  The measured features of these two samples
@@ -543,12 +549,13 @@ in a HEALPix arrangement.
 \subsection{Input/Outputs}
  Inputs are:
 
---  input and (optionally) output data repository.
+--  Input and (optionally) output data repository.
 
 Outputs are:
 
--- a sky map in the output repository.
--- a repository may have two sky maps: one for "deep" Coadds and one for "goodSeeing" Coadds.
+-- A sky map in the output repository.
+
+-- A repository may have two sky maps: one for "deep" Coadds and one for "goodSeeing" Coadds.
 
 \subsection{Evaluation and Development}
 
@@ -657,6 +664,10 @@ assumed to have a constant weight.
 
 \subsection{Evaluation and Development}
 
+-- Develop a tool that measures how well Psf matching to a model Psf
+works. This likely requires running Psf modeling on a {\tt
+  coaddTempExp}.
+
 -- Improve the current Science\_Ccd\_Exposure table and SelectImagesTask.
 The only measure of image quality that Science\_Ccd\_Exposure contains is Psf FWHM.
 We would like additional information such as Psf ellipticity, airmass and sky brightness.
@@ -664,9 +675,6 @@ We would like additional information such as Psf ellipticity, airmass and sky br
 -- Develop an equation that computes a single measure of quality
 based on these various bits of information.
 
--- Develop a tool that measures how well Psf matching to a model Psf
-works. This likely requires running Psf modeling on a {\tt
-  coaddTempExp}.
 
 
 {\bf ScaleZeroPointTask}
@@ -862,6 +870,12 @@ Outputs:
 
 \subsection{Evaluation and Development}
 
+-- Determine the optimal background matching style (polynomial,
+spline) and parameters (order, bin size) for the 4000$\times$4000
+patches. Differences between Stripe82 data and ImSim data (e.g. the
+chip gaps and offsets between Ccds) prevent us from simply reusing the
+parameters from early production.
+
 -- Move flux-scaling procedure to {\tt makeCoaddTempExp.py}.
 Currently, the assembleCoadd performs the flux-scaling step. This
 design was a temporary solution to an early-production problem.  It
@@ -869,17 +883,11 @@ would be much more efficient and clean for the flux scaling to be
 performed in makeCoaddTempExp.
 
 -- Move the background-matching quality cut to the {\tt
-  matchBackgrounds} subtask (hours work).
+  matchBackgrounds} subtask.
 
 -- Check that API of background matching task is appropriate for {\tt
   ImageDifferenceTask} to match the science image to the template
 before subtracting.
-
--- Determine the optimal background matching style (polynomial,
-spline) and parameters (order, bin size) for the 4000$\times$4000
-patches. Differences between Stripe82 data and ImSim data (e.g. the
-chip gaps and offsets between Ccds) prevent us from simply reusing the
-parameters from early production.
 
 -- Determine an appropriate level of sigma clipping to remove known
 transients from the Coadd.
@@ -948,6 +956,10 @@ These are identical to those mentioned in \S \ref{processccdsec}.
 
 \subsection{Evaluation and Development}
 
+-- There is no notion of persisting models for QA purposes alone.  For example we will want to persist
+the WCS we measure, but only for comparing to the skymap WCS.  In other words, we do not want to replace the 
+WCS but we do want to measure it.  
+
 -- Establish the optimal grid spacing for background estimation.
 
 -- Determine the deblending Config.
@@ -958,9 +970,6 @@ These are identical to those mentioned in \S \ref{processccdsec}.
 
 -- Ingest the appropriate patch information in the Coadd database table for ImageDifferenceTask.
 
--- There is no notion of persisting models for QA purposes alone.  For example we will want to persist
-the WCS we measure, but only for comparing to the skymap WCS.  In other words, we do not want to replace the 
-WCS but we do want to measure it.  
 
 \subsection{Metrics and Testing Tools}
 
@@ -1084,12 +1093,9 @@ correction of the {\tt calexp}.
 
 \subsection{Evaluation and Development}
 
--- Determine if deconvolution of the template, or convolution of the {\tt calexp},
-yields a cleaner detection set.
-
 -- Tune the heuristic that establishes the shape of the Gaussians
 based upon the input FWHMs of the {\tt calexp} and the template.
-Based on: {Israel}, {Hessman}, \& {Schuh} (2007).  Optimising optimal
+Based on: \\ {Israel}, {Hessman}, \& {Schuh} (2007).  Optimising optimal
 image subtraction, {\it Astronomische Nachrichten}, 328, 16.
 
 -- Determine the overall basis size (number of Hermite polynomials)
@@ -1103,26 +1109,24 @@ per--Exposure based on the number of Sources.  Do this for both
 Psf--matching and background--matching ({\it not} the same as
 BackgroundMatchingTask) models.
 
+-- Determine the dipole signatures of high proper motion objects in
+the image differences, and sufficient measurements to distinguish
+them.
+
 -- Determine the minimum useful signal--to--noise of an object to be
 used in Kernel fitting.
 
 -- Determine the impact of {\it not} having color--dependent Psf--matching kernels.
 
 -- Formalize metrics and quality ranges to assess the goodness of fit
-of the spatial kernel using the control sample.
-
--- Implement these metrics in pipeQA.
+of the spatial kernel using the control sample; implement these
+metrics in pipeQA.
 
 -- Turn off the majority of the measurements for the star selection,
 in the interest of speed.
 
--- Determine the dipole signatures of high proper motion objects in
-the image differences, and sufficient measurements to distinguish
-them.
-
 -- Define the database query to specify the overlapping tracts that
-will be used for template generation (stub exists in
-ImageDifferenceTask.getTemplate)
+will be used for template generation.
 
 -- Add a dipole flag for the DiaSources.
 
@@ -1137,7 +1141,10 @@ latter also requires a new table in the database.
 -- Determine if a per--pixel variance, or a single variance for the entire
 image, results in better subtracted images.
 
--- Stretch goal: develop Gaussian Processes based interpolation and
+-- Determine if deconvolution of the template, or convolution of the {\tt calexp},
+yields a cleaner detection set.
+
+-- Develop Gaussian Processes based interpolation and
 evaluate against polynomial interpolation
 
 \subsection{Metrics and Testing Tools}
@@ -1267,9 +1274,9 @@ to get summary statistics on photometry.
 Task                          & Time/Unit     & Units        & No. Units & Total Time & Notes \\
 \hline
 Build Registry                & 10 min        & Visit        & XXX             &        &  \\ 
-ProcessCcdTask                & 110 sec + ?   & Ccd          & XXX             &        &  \\ % Sum of all 4 subtasks below
+ProcessCcdTask                & 147 sec       & Ccd          & XXX             &        &  \\ % Sum of all 4 subtasks below
 ~~~~~~IsrTask                 & 30 sec        & $\cdots$     & $\cdots$        &        &  \\
-~~~~~~SnapCombineTask         & ?             & $\cdots$     & $\cdots$        &        &  \\
+~~~~~~SnapCombineTask         & 36 sec        & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~Calexp CDM              & 80 sec        & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~AstrometryTask          & 1 sec         & $\cdots$     & $\cdots$        &        &  \\
 MakeSkyMapTask                & 10 sec        & Skymap       & 1               &        &  \\
