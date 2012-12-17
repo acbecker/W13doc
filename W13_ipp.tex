@@ -466,7 +466,7 @@ sample as metrics to optimize.
 \clearpage 
 \section{MakeSkyMapTask} 
 
-Creates a "sky map": a sky pixelization for coadds consisting of a collection of overlapping "tracts".
+Creates a "sky map": a sky pixelization for Coadds consisting of a collection of overlapping "tracts".
 Each tract is, essentially, a very large exposure with its own WCS.
 Tracts are subdivided into rectangular overlapping subregions called "patches".
 
@@ -478,7 +478,7 @@ tracts as pixels in a HEALPix arrangement.
 
 As for all tasks, specify an input and (optionally) output data repository.
 makeSkyMap creates a sky map in the output repository.
-A repository may have two sky maps: one for "deep" coadds and one for "goodSeeing" coadds.
+A repository may have two sky maps: one for "deep" Coadds and one for "goodSeeing" Coadds.
 
 \subsection{Evaluation and Development}
 
@@ -495,7 +495,7 @@ None. If we do decide to switch to HealpixSkyMap then we must make healpy an LSS
 Healpy is self-contained other than needing cfitsio.
 
 The overlap between tracts may be larger than necessary, but the main effect of that
-will be to slightly increase storage requirements of coadds and slightly increase
+will be to slightly increase storage requirements of Coadds and slightly increase
 the time required to generate them. We will not see either effect in late Winter2013
 because we are only working with a small region on the sky.
 
@@ -511,27 +511,27 @@ information about a sky map and displays a 3d graph of it.
 
 Suitable science images for coaddition will be selected based on Psf FWHM, 
 sky level, and photomeric zeropoint.  These images will then be Psf--matched to a model Psf and warped
-to the WCS of the desired coadd patch to produce a coadd temp exposure.
+to the WCS of the desired Coadd patch to produce a coadd temp exposure.
 The model Psf will be a circular double Gaussian
-function, with variable {\tt sigma1} reflecting the desired FWHM of the coadd.  This will
+function, with variable {\tt sigma1} reflecting the desired FWHM of the Coadd.  This will
 be chosen from the distribution of FWHM of the input data, third quartile for depth and second
 quartile for good seeing.
 
 All CCDs from a visit that overlap a particular patch are combined into one coadd temp exposure,
 so we will create one coadd temp exposure per patch per visit.
-These coadd temp exposures are later assembled into a coadd by AssembleCoaddTask.
+These coadd temp exposures are later assembled into a Coadd by AssembleCoaddTask.
 
 \subsection{Input/Outputs}
 
 Inputs include science exposures ("calexp"), a database providing information about
-those calexp, selection criteria, the desired coadd ("deep" or "goodSeeing"),
-the skymap for that coadd and model Psf parameters.
+those calexp, selection criteria, the desired Coadd ("deep" or "goodSeeing"),
+the skymap for that Coadd and model Psf parameters.
 
 The output is a set of coadd temp exposures ("deepCoadd\_tempExp" or "goodSeeingCoadd\_tempExp").
 
 \subsection{SelectImagesTask subTask} 
 
-This subTask selects science exposures that are suitable for the coadd
+This subTask selects science exposures that are suitable for the Coadd
 based on criteria such as Psf FWHM and sky background. It operates by
 querying the Science\_Ccd\_Exposure table.
 
@@ -602,7 +602,7 @@ the kernel such that $(P-K) \times (P-K)$ provides sufficient ability
 to constrain all of the Kernel basis coefficients, which in turn sets
 the size of the Psf $C$ we may match to without sufficiently impacting
 the shapes of the stars, which in turn sets the number of images that we 
-may include in the coadd without deconvolving.  This trade--off, including the definitions
+may include in the Coadd without deconvolving.  This trade--off, including the definitions
 of ``sufficient'' above, will be explored in thorough detail in W13
 pre--production.
 
@@ -628,7 +628,7 @@ depth, variance, and Psf in the Coadd.
 -- Establish the quartiles of the FWHM distribution to use for setting the Coadd Psf, 
 and for including in the Coadd.
 
--- Establish the impact of {\it not} having color--dependent Psfs (or Psf--matching kernels) on the coadd.
+-- Establish the impact of {\it not} having color--dependent Psfs (or Psf--matching kernels) on the Coadd.
 
 -- Science images are presently Psf--matched to a model that is constant in pixel space.
 However, we want to match to a model Psf that is constant on the sky.  The
@@ -679,7 +679,7 @@ to determine the impacts of deconvolution.
 \section{AssembleCoaddTask} 
 
 The coadded template image will be constructed using background
-matching, as opposed to background subtraction. The assembleCoadd task assembles a coadd from a set of coadd temporary exposures.   Each {\tt coaddTempExp} is the size of a patch defined by the {\tt skyMap} and contains pixels from only a single visit.  The {\tt coaddTempExp}s have already been scaled to a common zeropoint and psf-matched.  However, they still have their backgrounds and therefore require background-matching to a reference visit. The reference visit is selected based primarily on fuller coverage of the patch and low background levels and background variance. 
+matching, as opposed to background subtraction. The assembleCoadd task assembles a Coadd from a set of coadd temporary exposures.   Each {\tt coaddTempExp} is the size of a patch defined by the {\tt skyMap} and contains pixels from only a single visit.  The {\tt coaddTempExp}s have already been scaled to a common zeropoint and psf-matched.  However, they still have their backgrounds and therefore require background-matching to a reference visit. The reference visit is selected based primarily on fuller coverage of the patch and low background levels and background variance. 
 
 The assembleCoadd task assumes that all {\tt coaddTempExp}s cannot fit in memory at the same time. The following steps outline the processing in more detail:
 
@@ -687,7 +687,7 @@ The assembleCoadd task assumes that all {\tt coaddTempExp}s cannot fit in memory
 
 -- Pass to the background matching task a list of dataRefs of the {\tt coaddTempExp}s, and the reference exposure dataRef (if supplied).  Receive back a list of structs containing {\tt Background} objects and statistics describing the quality of the match.  Prune this list of exposures, removing the coaddTempExps for which the background-matching failed.  Current tests include too many nans, and the ratio MSE/Var did not make the quality threshold.
 
--- Grid the patch into a smaller sub-region {\tt subBBox}es. For each {\tt subBBox}, read in each image and keep in memory only the region that overlaps the {\tt subBBox}. Add the corresponding region from the Background match to bring the background level up to that of the reference image.  Coadd by calculating the mean with optional outlier rejection.  Repeat for {\tt next subBBox}.  Persist coadd. 
+-- Grid the patch into a smaller sub-region {\tt subBBox}es. For each {\tt subBBox}, read in each image and keep in memory only the region that overlaps the {\tt subBBox}. Add the corresponding region from the Background match to bring the background level up to that of the reference image.  Coadd by calculating the mean with optional outlier rejection.  Repeat for {\tt next subBBox}.  Persist Coadd. 
 
 %The image subtraction
 %code will also be run using its own internal background--matching (of
@@ -743,7 +743,7 @@ Outputs:
 
 \clearpage 
 \section{ProcessCoaddTask} 
-We will be running calibration, detection and measurement on coadds to 
+We will be running calibration, detection and measurement on Coadds to 
 generate the data products necessary for QA and also to measure the Psf
 for matching science images to the template.  With the outputs of the process coadd task we will answer questions including:
 
@@ -782,7 +782,7 @@ These are identical to those mentioned in \S \ref{processccdsec}.
 
 -- Determine the accuracty of measurement without a color dependent Psf.
 
--- Ingest the appropriate patch information in the coadd database table for ImageDifferencingTask.
+-- Ingest the appropriate patch information in the Coadd database table for ImageDifferencingTask.
 
 -- There is no notion of persisting models for QA purposes alone.  For example we will want to persist
 the WCS we measure, but only for comparing to the skymap WCS.  In other words, we do not want to replace the 
@@ -821,13 +821,13 @@ Psf--matching -- will happen on this template, leaving the {\tt
 The Task next selects the objects to be used to Psf match the {\tt
   calexp} and template.  The code is currently configured to use a
 starSelectorRegistry ``second moment'' star selector; the type of selector is configurable.  
-Selection is run using the template image,
+Selection is run using detections on the template image,
 since this is likely to have higher signal--to--noise, and no
 astrophysical transients.  Objects with Mask
 bits in either image (set in the Config, currently ``EDGE'' and
 ``SAT'') are removed from the returned Source catalog.
 
-The code next runs the ImagePsfMatchTask.  This accepts the two
+The Task next runs the ImagePsfMatchTask.  This accepts the two
 Exposures, the FWHM of their two Psfs, and the Source catalog as
 inputs.  ImagePsfMatchTask solves for $K(x,y)$ in the
 equation $S(x,y) = (K \otimes T)(x,y)$, where $S$ is the science
@@ -911,67 +911,36 @@ correction of the {\tt calexp}.
 
 \subsection{Evaluation and Development}
 
-This may in some cases result in
-deconvolution of the template image.  There is a general sense that
-the template may be deconvolved more reliably than the single--depth
-images, due to its higher signal--to--noise.  Quantifying this is a
-research task for W13.
+-- Determine if deconvolution of the template, or convolution of the {\tt calexp},
+yields a cleaner detection set.
 
-The FWHMs are used in a heuristic to determine the shape of
-the bases used to model the Psf--matching kernel.  This heuristic will
-be tuned on sample runs for W13.  The overall number of bases becomes
-inflated by multiplying each basis with a set of Hermite--polynomials.
-The number of bases ultimately used will be determined in
-pre--production by using a principled means of deciding how much
-information each basis contributes to the solution.  
+-- Tune the heuristic that establishes the shape of the Gaussians based upon
+the input FWHMs of the {\tt calexp} and the template.
 
--- We do not have color--dependent Psf--matching kernels,
-e.g. $K(x,y,g-r)$, which are needed in the presence of differential
-chromatic refraction.  This will impact the quality of the
-Psf--matching happening in ImagePsfMatchTask, in particular for
-objects of extreme color in the bluer passbands, and at high airmass.
-We will first evaluate the fitting of $K(x,y)$ in the absence of
-DCR by operating on $i$--band data, and estimate the degradation in
-the quality of the solution when going to $g$--band.  Mitigation
-strategies include creation of templates at different airmasses, but
-this also requires sets both East and West of the meridian.
+-- Determine the overall basis size (number of Hermite polnomials) 
+required by using a principled means of deciding how much information each basis contributes to the solution.  
+Do so as a function of Psf FWHM and variation.
 
--- Objects with high proper motion will leave streaked images in the
-Coadd, and result in a complex dipole structure in an image
-difference.  We will initially mitigate these effects by analyzing
-images from within a single observing season.
+-- Determine how many Sources are needed to support a model of a given spatial order.   Determine
+if we are able to reliably adjust this order per--Exposure based on the number of Sources.  Do this
+for both Psf--matching and background--matching models ({\it not} the same as BackgroundMatchingTask).
 
--- What is the minimum useful signal--to--noise of an object to be
+
+-- Determine the minimum useful signal--to--noise of an object to be
 used in Kernel fitting.
 
--- How do we prevent over-- or under--fitting of the spatial model?
-The number of sources that are detected in any given image determine
-the complexity of the model that may be supported.  We need to decide
-if we are going to reduce the degree of the spatial model based on the
-number of detected sources or not; this means that the {\tt Config}
-will describe the heuristics used to determine the spatial order of
-the models, and not the spatial order of the models themselves.  This
-information needs to be persisted as metadata if we choose to go this
-route.
-
--- We need to establish how much the template may be deconvolved in
-the case that the science data have a narrower FWHM.  Alternately, we
-need to understand the impacts of convolving the science image on the
-depth we may detect to in the difference image.
-
--- We will turn off the majority of the measurements for the star
-selection, in the interest of speed.
-
--- Tune the heuristic that selects the shapes of the Gaussians based
-on the FWHM of the {\tt calexp} and the template.
-
--- Evaluate the number of Kernel bases needed as a function of Psf
-FWHM and variation.
+-- Determine the impact of {\it not} having color--dependent Psf--matching kernels.
 
 -- Formalize metrics and quality ranges to assess the goodness of fit
 of the spatial kernel using the control sample.
 
 -- Implement these metrics in pipeQA.
+
+-- Turn off the majority of the measurements for the star
+selection, in the interest of speed.
+
+-- Determine the dipole signatures of high proper motion objects in the image differences,
+and sufficient measurements to distinguish them.
 
 -- Define the database query to specify the overlapping tracts that
 will be used for template generation (stub exists in
@@ -990,28 +959,10 @@ latter also requires a new table in the database.
 -- Stretch goal: develop Gaussian Processes based interpolation and
 evaluate against polynomial interpolation
 
--- Tune the heuristic that chooses the shapes of the Kernel basis
-based on the input FWHMs.
-
--- Tune the size of the Kernel basis using a method that quantifies
-degree of overfitting (e.g. BIC).
-
--- The degree of the spatial kernel model.  Optionally allow it to
-float based on the number of KernelCandidates.
-
--- The degree of the spatial background--matching model ({\it not} the
-same as BackgroundMatchingTask).
-
--- Use a per--pixel variance, or a single variance for the entire
-image.
+-- Determine if a per--pixel variance, or a single variance for the entire
+image, results in better subtracted images.
 
 \subsection{Metrics and Testing Tools}
-
--- In pre--production, testing of the heuristic that defines the shape
-of the Gaussians.
-
--- In pre--production, testing of the number of basis functions needed
-to provide a quality fit.  
 
 -- The fundamental quality metric we have been using is the
 distribution of residuals in the difference image, normalized by the
@@ -1021,6 +972,12 @@ spatially interpolated coefficients, to determine how much the spatial
 model degrades the fit.  We will also define a control sample of
 objects to ascertain the final quality of the image subtraction.
 
+-- In pre--production, testing of the heuristic that defines the shape
+of the Gaussians.
+
+-- In pre--production, testing of the number of basis functions needed
+to provide a quality fit.  
+
 -- Efficiency and purity of object detection and measurement will be
 done by comparing the DiaSources to the (time--dependent) reference
 catalog.
@@ -1028,15 +985,6 @@ catalog.
 -- False positives (most likely to be associated with bright stars)
 will be investigated by looking at their properties in the database
 (colors and proper motions).
-
-Important metrics that will be exercised pre--production include: the
-use of the BIC to determine the complexity of the kernel basis; an
-examination of objects with large residuals in subtractions that we
-expect to be nearly exact (what are their colors and proper motions).
-
-In production our core metrics will include: what are the residuals of
-a control sample of stars after application of the Psf--matching
-kernel.
 
 -- Several debugging hooks have been implemented in {\tt ip\_diffim} for
 the visualization of the inputs and outputs to ImageDifferenceTask.
