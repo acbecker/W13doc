@@ -305,7 +305,7 @@ scaling all flats in a focal plane so that there is a single normalization for t
 \subsection{CalibrationCombineTask}
 The individual calibration frames are combined into a single high signal to noise master frame. 
 
-\subsection{Evaluation and Development Tasks}
+\subsection{Evaluation and Development}
 -- Most of this task has been implemented using a combination of ImSim specific code and code written by Paul P. for Subaru
 
 -- A design review will be scheduled to address any implementation issues.
@@ -435,7 +435,7 @@ the first snap of the visit pair.  The FITS keywords that will {\it
   not} be modified in this process, and that are common between the
 two Snaps, include: {\bf Filter}.
 
-\subsection{CalibrateTask subTasks} 
+\subsection{CalibrateTask subTask} 
 First off the calibration repairs any cosmic rays it finds.
 The calibrate task does an initial optional background subtraction and detection phase (which also does a background background subtraction).  The detected sources are used to calculate
 the Psf, the aperture correction, the photometric zeropoint, and are fed to the astrometry.net framework for astrometric
@@ -502,7 +502,7 @@ to perform the SnapPsfMatchTask.
 {\bf DeblendTask}\\
 -- deblending radius
 
-{\bf MeasurementTask}
+{\bf MeasurementTask}\\
 -- galaxy shape parameters
 
 \subsection{Metrics and Testing Tools}
@@ -817,20 +817,20 @@ works. One source of such data is Psf-matched coadd temp exposures. \comment{pla
 \section{ProcessCoaddTask} 
 We will be running calibration, detection and measurement on coadds to 
 generate the data products necessary for QA and also to measure the Psf
-for matching science images to the template.
-
-With the outputs of the process coadd task we will answer questions including:
+for matching science images to the template.  With the outputs of the process coadd task we will answer questions including:
 
 -- Does the measured shape of the Psf match the input model Psf to which the template was matched?
-- Does astrometry of the template match the SkyMap?
+
+-- Does astrometry of the template match the SkyMap?
+
 -- How does the Psf change with position, source flux, etc.?
 
-\subsection{Inputs}
+\subsection{Inputs/Outputs}
 
+Inputs: \\
 -- Coadd exposure
 
-\subsection{outputs}
-
+Outputs:\\
 -- Coadd calexp
 
 -- Coadd exposure metadata
@@ -1147,11 +1147,12 @@ database ingestion, however.  The steps for the different phases of ingestion wi
 
 -- Run ingestForcedSource.py
 
-\subsection{Evaluation and Development Tasks}
+\subsection{Evaluation and Development}
 -- genInputRegistry.py takes ~10 min per visit to run.  With large amounts of data, this is intractable.  Evaluate the feasability of unifying parallel input registry generation.
 
 -- Each of the above needs to be taskified and made so that it can be parallelized
-~~~~-- In particular, streamlining the parallel process is a must if data volumes are $>$ 10E8 rows.
+
+-- In particular, streamlining the parallel process is a must if data volumes are $>$ 10E8 rows.
 
 -- After parallel ingest, the tables need to be merged and indexed which can take a long time.  We need to identify the optimal recipe for parallel ingest and evaluate the options for automating this process.
 
@@ -1170,15 +1171,15 @@ database ingestion, however.  The steps for the different phases of ingestion wi
 \clearpage 
 \section{Summary} \becker
 
-\subsection{Tall Poles}
+The ``tall poles'' that will be evaluated in the development portion of production are:
 
--- Distinguishing cosmic rays from the cores of stars in SnapCombine.
+-- Distinguish cosmic rays from the cores of stars in SnapCombine.
 
--- Dimensions of the matching kernel in WarpAndPsfMatchTask.
+-- Establish dimensions of the matching kernel in WarpAndPsfMatchTask.
 
--- Complexity of the Kernel basis and spatial model in ImagePsfMatchTask.
+-- Determine complexity of the Kernel basis and spatial model in ImagePsfMatchTask.
 
--- Sources of false positives in the difference images.
+-- Identify Sources of false positives in the difference images.
 
 
 %%%%%%%
