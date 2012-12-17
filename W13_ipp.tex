@@ -90,8 +90,8 @@ MySQL database.  The natural QA hooks are in the assessment of the
 Psf--matched template, and in the purity of the DiaSource sample.  We
 will focus on the following metrics to assess the production:
 \begin{itemize}
-\item rate of false positives
-\item rate of missed detections
+\item rate of false positives (purity)
+\item rate of missed known or expected detections (completeness)
 \item performance (computational and I/O)
 \end{itemize}
 This document outlines the details of each stage of production, 
@@ -193,9 +193,9 @@ will, therefore, be defined in the $i$--band at airmass $<$1.15.
 \begin{figure}
 \centerline{\includegraphics[width=0.8\textwidth]{Figures/DCR_R_stars.eps}}
 \caption{The differential chromatic diffraction relative to a G5V star
-  as a function of airmass. The left panel shows the positional offset
+  as a function of airmass (note different y--scales). The left panel shows the positional offset
   for the $g$ band and the right panel the $i$ band. In both panels
-  the stars range in spectral type from O6 to M8.}
+  the stars range in spectral type from main sequence O6 to M8 (top to bottom).}
 \label{DCR}
 \end{figure}
 
@@ -431,7 +431,6 @@ parameters can be turned on and off).
 -- Implement a mechanism for the butler to retrieve the appropriate calibration products given a camera rotator angle.
 
 {\bf SnapCombineTask}\\
-
 -- Evaluate the sensitivity of a simple add/subtract approach for
 snapCombine as a function of variation in per visit offsets and
 variation in PSF. Current simulations have a distribution of offsets
