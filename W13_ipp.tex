@@ -3,7 +3,6 @@
 \usepackage[paperwidth=8.5in,paperheight=11in,centering,margin=1in]{geometry}
 \usepackage{amsmath}
 \usepackage{amsbsy}
-\usepackage{squeeze}
 \usepackage{natbib}
 \usepackage{rotating}
 \input epsf
@@ -1256,41 +1255,48 @@ to get summary statistics on photometry.
 %%%%%%%
 
 \clearpage 
-\section{Estimated Processing Times} 
+%\section{Estimated Processing Times} 
 
-\begin{table*}[h]
+%\begin{table*}[h]
+\begin{sidewaystable*}[h]
 \small
 \begin{center}
 \caption{\label{tab-pars} Estimated Processing Times}
 \begin{tabular}{lccccl}
 \hline \hline
-Task                          & Time/Unit     & Units        & No. Units & Total Time & Notes \\
+Task                          & Time/Unit     & Units        & No. Units & Total Time (hrs) & Notes \\
 \hline
-Build Registry                & 10 min        & Visit        & XXX             &        &  \\ 
-ProcessCcdTask                & 110 sec + ?   & Ccd          & XXX             &        &  \\ % Sum of all 4 subtasks below
+Build Registry                & 10 min        & Visit        & 60              & 10     &  20 visits in i + \\
+&&&&&20 visits in g + \\
+&&&&&10 visits in high airmass + \\
+&&&&&10 visits with long baseline\\ 
+ProcessCcdTask                & 110 sec + ?   & Ccd          & 11340           & 347+???&  \\ % Sum of all 4 subtasks below
 ~~~~~~IsrTask                 & 30 sec        & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~SnapCombineTask         & ?             & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~Calexp CDM              & 80 sec        & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~AstrometryTask          & 1 sec         & $\cdots$     & $\cdots$        &        &  \\
 MakeSkyMapTask                & 10 sec        & Skymap       & 1               &        &  \\
-MakeCoaddTempExpTask          & 180 min       & Visit-Patch  & XXX             &        & 79 Ccds \\
-AssembleCoaddTask             & 150 sec       & Patch        & XXX             &        & 9 coaddTempExp \\   
-ProcessCoaddTask              & ?             & Patch        & XXX             &        &  \\
-ImageDifferenceTask           & ?             & Ccd          & XXX             &        &  \\
+MakeCoaddTempExpTask (no PSF match) & 30 sec  & Visit-Patch  & 12000           &  100   &  \\
+MakeCoaddTempExpTask          & 175 sec       & Visit-Patch  & 12000           &  583   &  \\
+AssembleCoaddTask             & 356 sec       & Patch        & 200             &  20    & Assuming 20 visits/patch \\   
+ProcessCoaddTask              & ?             & Patch        & 200             &  ???   &  \\
+ImageDifferenceTask           & ?             & Ccd          & 12000           &  ???   &  \\
 ~~~~~~ImagePsfMatchTask       &               & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~SourceDetectionTask     &               & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~SourceMeasurementTask   &               & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~SourceDeblendTask       &               & $\cdots$     & $\cdots$        &        &  \\
 \hline
-Database Ingest               & 10$^{-X}$ sec & Rows         & XXX             &        &  \\
-~~~~~~Calexp                  &               & Rows         & XXX             &        &  \\
-~~~~~~Coadd                   &               & Rows         & XXX             &        &  \\
-~~~~~~DiaSource               &               & Rows         & XXX             &        &  \\
+Database Ingest               & 1 sec      & 10K Rows     & 2320     & 0.64    & Assuming 12x parallel  \\
+~~~~~~Calexp                  & 1 sec      & 10K Rows     & 1700     & 0.47    &  \\
+~~~~~~Coadd                   & 1 sec      & 10K Rows     & 120      & 0.033   &  \\
+~~~~~~DiaSource               & 1 sec      & 10K Rows     & 500      & 0.14    &  \\
+~~~~~~ForcedPhot (not included in total)& 1 sec      & 10K Rows     & 6800     & 1.9    &  \\
 \hline
 \hline
 \end{tabular}
 \end{center}
-\end{table*}
+%\end{table*}
+\end{sidewaystable*}
 
 \end{document}
 
