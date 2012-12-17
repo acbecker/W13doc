@@ -1,11 +1,24 @@
-\documentclass[12pt]{article}
-\usepackage{epsfig}
+\documentclass[prd, nofootinbib, floatfix, 11pt,tightenlines,times]{article}
+
+\usepackage[paperwidth=8.5in,paperheight=11in,centering,margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsbsy}
+\usepackage{squeeze}
 \usepackage{natbib}
-\usepackage{amssymb,amsmath}
-\usepackage{titletoc}
-\usepackage{color}
-\usepackage{graphicx}
 \usepackage{rotating}
+\input epsf
+\usepackage{amsmath}
+\usepackage{wasysym}
+\usepackage{subfigure}
+\usepackage{graphicx}
+\usepackage{epsfig}
+\usepackage{color}
+%\usepackage{ulem}
+%\usepackage{epstopdf}
+
+%\renewcommand{\baselinestretch}{0.98}
+\usepackage{epsfig}
+\usepackage{titletoc}
 
 \usepackage[toc,page]{appendix}
 
@@ -190,6 +203,7 @@ will, therefore, be defined in the $i$--band at airmass $<$1.15.
 
 
 \begin{table}
+\begin{center}
 \begin{tabular}{llcrrr}
 Sample & Device & Filter & Exposures & airmass & time interval \\
 \hline  
@@ -210,6 +224,7 @@ DCR CCD             & central         & $g$  & 20 & $>$1.3 &$<$30 days \\
 DCR Raft              & central raft  & $g$  & 20 & $>$1.3 &$<$30 days \\
 DCR Focal Plane   & focal plane  & $g$  & 20 & $>$1.3 &$<$30 days
 \end{tabular}
+\end{center}
 \end{table}
 
 
