@@ -172,7 +172,7 @@ negligible ($i$--band) and one where the chromatic effects are
 expected to be substantial ($g$--band).
 
 We accomplish this with a series of data sets drawn from the 5yr
-simulations. We define a baseline data as the central Ccd, in the $i$
+simulations. We define a baseline data as the central raft, in the $i$
 band, at low airmass, and for a set of observations spread
 over 30 days.  This will serve as the reference set that maps out the
 performance of the algorithms relative to the optical design of the
@@ -207,20 +207,16 @@ will, therefore, be defined in the $i$--band at airmass $<$1.15.
 \begin{tabular}{llcrrr}
 Sample & Device & Filter & Exposures & airmass & time interval \\
 \hline  
-Baseline Ccd             & central         & $i$  & 20 & $<$1.15 &$<$30 days \\
 Baseline Raft              & central raft  & $i$  & 20 & $<$1.15 &$<$30 days \\
 Baseline Focal Plane   & focal plane  &  $i$ & 20 & $<$1.15 &$<$30
 days \\
 \hline  
-Color Ccd             & central         & $g$  & 20 & $<$1.15 &$<$30 days \\
 Color Raft              & central raft  & $g$  & 20 & $<$1.15 &$<$30 days \\
 Color Focal Plane   & focal plane  &  $g$ & 20 & $<$1.15 &$<$30 days \\
 \hline 
-Time Ccd             & central         & $i$  & 20 & $<$1.15 &$>$3 years \\
 Time Raft              & central raft  & $i$  & 20 & $<$1.15 &$>$3 years \\
 Time Focal Plane   & focal plane  &  $i$ & 20 & $<$1.15 &$>$3 years \\
 \hline 
-DCR Ccd             & central         & $g$  & 20 & $>$1.3 &$<$30 days \\
 DCR Raft              & central raft  & $g$  & 20 & $>$1.3 &$<$30 days \\
 DCR Focal Plane   & focal plane  & $g$  & 20 & $>$1.3 &$<$30 days
 \end{tabular}
@@ -228,25 +224,23 @@ DCR Focal Plane   & focal plane  & $g$  & 20 & $>$1.3 &$<$30 days
 \end{table}
 
 
-All specified data are currently stored at NCSA.  Special purpose runs
-can and will be undertaken as needed using the Google resources and
-will be staged at JHU and then transferred to NCSA.  
 
 Master flats, darks, and biases will be produced by coadding 10
-examples (each including 2 snaps).  We will not be simulating any time
-dependent effects in the calibration products.
+examples (each including 2 snaps).  Time dependent effects will not be
+simulated in the calibration products other than those arising from
+the spider. The spider introduces asymmetric vignetting.  This will be
+taken out using flat fields produced with a variety of rotator angles.
+Where the effect is strongest (the outermost 4 CCDs), the angular
+dependence introduces scatter of $\sim 5$\%.  Using flats generated at
+increments of 5 deg from 0 - 90 deg (18 master flats) will bring this
+below the nominal 1\% error.
 
-The spider introduces asymmetric vignetting.  This should be taken out
-using flat fields produced with a variety of rotator angles.  Where
-the effect is strongest, the angular dependence introduces scatter of
-$\sim~5$\%.  Using flats generated at increments of 5 deg from 0 - 90
-deg (18 master flats) should bring this below the nominal 1\% error.  
 
-{\bf Reference Catalog}\\
-We already have a stars--only reference catalog for the entire area
-covered by the W13 ImSim area.  We will produce the galaxy catalog to
-go along with this.  This reference catalog will contain the following
-columns:
+{\bf Reference Catalogs}\\
+
+Reference catalogs for entire W13 5yr survey exist for stellar sources
+and will be generated for galaxy sources. The attributes of the
+reference catalog will be extended (from S12) to include:
 
 -- unique integer id of the object traceable back to the base catalogs
 
@@ -280,25 +274,36 @@ columns:
 
 -- A\_v reddening 
 
+\subsection{Evaluation and Development}
 
-We will require the reference catalog to be a function of time for
-the time variable objects (brightness, position).  This has not been
-done before.
+-- Generation of galaxy reference catalogs for the selected W13 fields
 
-{\bf Stretch}\\
-Processing of SDSS Stripe82 data is a stretch goal for Winter 2013
-production.
+-- Creation of astrometry.net index files for the reference catalogs
 
-%%%%%%%
+-- Generation of angle dependent flats (360 visits) and evaluation
+that 5 degree sampling produces photometry good to 1\%
+
+-- Generation of visit specific reference catalogs that will capture
+the  variability of the sources at the point of observation.
+
+All specified data are currently stored at NCSA.  Special purpose runs
+can and will be undertaken as needed using the Google resources and
+will be staged at JHU and then transferred to NCSA.  
+
 
 %\clearpage 
 \section{CreateCalibrationProductsTask} 
 This task takes individual calibration frames and combines them into
-high signal to noise master frames.  We will run: masterbias, masterdark, masterflat.  
-This task will not be camera specific and will be overridden by camera specific configs (and potentially
-using the config to retarget subtasks) in the camera obs package.  The general flow of data will be to process the individual frames
-with the appropriate instrument signature removal (ISR) steps for the product and camera.  Next a scale is computed for each of the input
-frames.  Finally the frames are combined into the master frame.
+high signal-to-noise master frames.  masterbias, masterdark,
+masterflat are applied to the input calibration data. This task will
+not be camera specific and will be overridden by camera specific
+configs (and potentially using the config to retarget subtasks) in the
+camera obs package.  The general flow of data will be to process the
+individual frames with the appropriate instrument signature removal
+(ISR) steps for the product and camera.  Normalization of the flats is
+applied relative to the full focal plane. Most of the components of
+this task have been implemented using a combination of ImSim specific
+code and code written by Paul P. for Subaru.
 
 \subsection{Input/Outputs}
 Inputs are:
@@ -310,7 +315,7 @@ Outputs are:
 -- A set of master calibration frames.
 
 \subsection{CalibrationProcessTask subTask}
-This is an ISR-like task that corrects the frames for the appropriate instrumental effects for that calibration
+This is an ISR-like task that corrects the frames for instrumental effects for that calibration
 product.
 
 \subsection{CalibrationScaleTask}
@@ -318,28 +323,34 @@ This task determines the scaling for a particular single epoch.  This task is re
 scaling all flats in a focal plane so that there is a single normalization for the full focal plane.
 
 \subsection{CalibrationCombineTask}
-The individual calibration frames are combined into a single high signal to noise master frame. 
+The individual calibration frames are combined into a single high signal-to-noise master frame. 
 
 \subsection{Evaluation and Development}
--- Most of this task has been implemented using a combination of ImSim specific code and code written by Paul P. for Subaru.
 
--- A design review will be scheduled to address any implementation issues.
+-- Design review to address implementation issues.
 
--- The effectiveness of the angular dependent flat fields will be evaluated.
+-- Implementation of process, scale and combine as pipeline tasks
+
+-- Evaluation of the required sampling of the angular dependent flat
+fields in terms of the required photometric accuracy
 
 
 %%%%%%%
 
 %\clearpage 
 \section{ProcessCcdTask\label{processccdsec}} 
-The ProcessCcdTask does the work required to take input data from raw form all the way to a calibrated and
-photometered science image.  The ProcessImageTask task is subclassed with camera specific configs and processing, but the overall 
-work flow is first to do the instrument signature removal step which is handled by the camera specific subclass.  For ImSim
-data, there is an additional step of combining the individual snap images before the rest of processing happens. Next calibration
-is run.  This measures the Psf and aperture correction, and also does the photometric and astrometric calibration.  
-Detection comes next.  After detection, footprints are deblended.
-Finally measurement is run on the deblended footprints.  Most of the above steps are optional, but care should be taken
-when turning any one off that it does not affect down stream processing.
+The ProcessCcdTask takes input data from its raw form to a calibrated
+and photometered science image. The ProcessImageTask task is
+subclassed with camera specific configs and processing. The work flow
+initially removes the instrument signature, which is handled by the
+camera specific subclass.  For ImSim data, individual snap images can
+then be combined before the rest of processing happens. Calibration
+measures the Psf and aperture correction, and generates the
+photometric and astrometric calibration.  In the detection task
+footprints are deblended and measurement is run on the deblended
+footprints.  Most of the above steps are optional, but care is
+required when turning any one off to determine the effects on down
+stream processing.
 
 \subsection{Input/Outputs}
 Inputs are:
@@ -355,7 +366,7 @@ Outputs are:
 
 -- Exposure metadata for ingest (bboxes, zeropoints, etc.)
 
--- Src for ingest
+-- sources for ingest
 
 -- Calexp for input to {\tt ip\_diffim}
 
@@ -364,117 +375,157 @@ Outputs are:
 -- Psf for Psf matching
 
 \subsection{IsrTask subTask}
-It was decided that the instrument signature removal was so dependent on the specific instrument setup that a generalized
-ISR task was not generally useful.  The ISR is expected to be handled by a camera specific task in the camera obs package.  
-For ImSim the process is overscan subtraction, bias correction, flat correction, assembly of amps into a chip--sized image, 
-and interpolation of saturated and bad pixels.
+The ISR is handled by a camera specific task in the camera obs
+package.  For ImSim the process is overscan subtraction, bias
+correction, flat correction, assembly of amps into a chip--sized
+image, and interpolation of saturated and bad pixels.
 
 \subsection{SnapCombineTask subTask}
 The baseline LSST observing plans defines a field ``visit'' as the
-acquisition of two back--to--back images (called Snaps) and their
-combination into a single visit Exposure.  By subtracting the two snaps
-(snap2 - snap1), CRs may be detected in the difference as objects with
-either positive or negative polarity, indicating a CR in the second or
-first snap, respectively.  These pixels will be masked and
-interpolated, and the two snaps coadded into the final visit Exposure.
+acquisition of two back--to--back images (snaps) and their combination
+into a single visit Exposure.  CRs can be detected by subtracting two
+snaps (snap2 - snap1). Objects with either positive or negative
+polarity, indicate a CR in the second or first snap, respectively.
+These pixels are masked and interpolated, and the two snaps coadded
+into the final visit Exposure.
 
 
 \subsection{CalibrateTask subTask} 
-First off the calibration repairs any cosmic rays it finds.
-The calibrate task does an initial optional background subtraction and detection phase (which also does a background background subtraction).  The detected sources are used to calculate
-the Psf, the aperture correction, the photometric zeropoint, and are fed to the astrometry.net framework for astrometric
-calibration.
+Calibration interpolates over cosmic rays.  An initial (optional)
+background subtraction and detection phase is performed.  Detected
+sources are used to calculate the Psf, aperture correction, and
+photometric zeropoint, and are fed to the astrometry.net framework for
+astrometric calibration.
 
 \subsection{DetectTask subTask}
-The detect task does an optional second background estimation taking into account the original detection mask set by the calibrate task.
+The detect task does an optional second background estimation taking
+into account the original detection mask set by the calibrate task.
 It then runs final detection.
 
 \subsection{DeblendTask subTask}
-The deblend task searches for peaks within the footprints returned by the detect task and splits the children out into deblended sources.
+The deblend task searches for peaks within the footprints returned by
+the detect task and splits the children out into deblended sources.
 
 \subsection{MeasureTask subTask}
 The measure task makes the statistical measurements on each footprint (or peak if deblended).
 
 \subsection{Evaluation and Development}
 
--- A primary issue is which steps in processCcd can be turned off.  In our experience with Stripe82, we found that the products produced by
-essentially all steps were necessary in later processes.  The one possible exception was the DeblendTask.  Aperture corrections (CalibrateTask) 
-are needed by forced photometry, zeropoints (CalibrateTask)
-are needed by pipeQA and AssembleCoaddTask, and detection planes (DetectTask) are needed by the background matching tasks.
+%-- A primary issue is which steps in processCcd can be turned off.  In
+%our experience with Stripe82, we found that the products produced by
+%essentially all steps were necessary in later processes.  The one
+%possible exception was the DeblendTask.  Aperture corrections
+%(CalibrateTask) are needed by forced photometry, zeropoints
+%(CalibrateTask) are needed by pipeQA and AssembleCoaddTask, and
+%detection planes (DetectTask) are needed by the background matching
+%tasks.
 
 {\bf ImSim IsrTask}\\
--- Saturation detection is done before bad pixel masking because we have the pixel masks in Ccd coordinates.
-This meant that some bad pixels were also marked as SAT.  We fix this by changing all SAT+BAD pixels back to just BAD.
+-- Assemble amps in readout order (serial transfer direction is along the x-axis of the image).
 
--- The flats had per chip normalizations meaning that the zeropoint was not fixed for the focal plane.  This should be
-fixed by the new calibration products task
+-- Apply the bad pixel masks prior to saturation detection (requires
+generation of bad pixel masks in amplifier coordinates as opposed to
+CCD coordinates)
 
--- Amps will be assembled in readout order such that the serial transfer direction is along the x-axis of the image.
+%Saturation detection is done before bad pixel masking because we have the pixel masks in Ccd coordinates.
+%This meant that some bad pixels were also marked as SAT.  We fix this by changing all SAT+BAD pixels back to just BAD
+%-- The flats had per chip normalizations meaning that the zeropoint was not fixed for the focal plane.  This should be
+%fixed by the new calibration products task
 
 -- Implement a mechanism for the butler to retrieve the appropriate calibration products given a camera rotator angle.
 
 {\bf SnapCombineTask}\\
 
--- The outstanding issue driving the decision to use Psf--matching vs. a straight difference
-is the amount of image motion between Snaps in the W13 ImSim data.
-The amplitude of these shifts in the Winter2013 test data, determined
-through manual source detection and matching, is up to 0.12$\arcsec$
-(0.6 pixels).  This amplitude of shift requires that Psf--matching techniques will be necessary for Winter2013 processing.  
+-- Evaluate the sensitivity of a simple add/subtract approach for
+snapCombine as a function of variation in per visit offsets and
+variation in PSF. Current simulations have a distribution of offsets
+with $>$70\% less than 0.1 pixels but with a 1\% tail extending to 0.6
+pixels.
 
--- Establish if the default spatial order (0) for this model is sufficient.
+-- Based on the evaluation of the sensitivity: implement Psf-matching
+difference imaging.
 
--- Establish if the delta function kernel basis set may be used in this Task.
- The delta--function kernel set is more sensitive
-to noise than sum--of--Gaussian basis sets, but better able to model
-fractional pixel shifts without significant shape distortions.  The
-zero--order spatial model will help to regularize the overfitting
-problem.
+-- Evaluate the appropriate basis functions for psf-matching
+(including sum--of--Gaussian basis sets and  delta--function kernels),
+the spatial order for the interpolation of the kernels,  and the
+number of bases.
 
--- Establish a sufficient set of basis shapes for the sum--of--Gaussian basis.
-Given the prior expectation that the matching Kernel will look like a delta function, 
-this basis set will be smaller than the default ImagePsfMatchTask set (31 terms).
+-- Establish the metadata to be summed (e.g. exposure time), averaged
+(e.g. TAI of exposure), and assumed to be the same (e.g. Wcs).
 
--- Decide between the two bases in the final SnapCombineTask Config.
 
--- Establish sufficient dimensions for the Psf--matching kernel, since again
-the power is expected to be localized.
+%The outstanding issue driving the decision to use Psf--matching vs. a straight difference
+%is the amount of image motion between Snaps in the W13 ImSim data.
+%The amplitude of these shifts in the Winter2013 test data, determined
+%through manual source detection and matching, is up to 0.12$\arcsec$
+%(0.6 pixels).  This amplitude of shift requires that Psf--matching techniques will be necessary for Winter2013 processing.  
 
--- Develop tools to distinguish cosmic rays from the most significant
-contaminant, the cores of bright stars.  
+%-- Establish if the default spatial order (0) for this model is sufficient.
 
--- Develop tools to query the known cosmic ray list (locations, shapes and amplitudes), 
-and associate them with DiaSources.
+%-- Establish if the delta function kernel basis set may be used in this Task.
+% The delta--function kernel set is more sensitive
+%to noise than, but better able to model
+%fractional pixel shifts without significant shape distortions.  The
+%zero--order spatial model will help to regularize the overfitting
+%problem.
+%
+%-- Establish a sufficient set of basis shapes for the sum--of--Gaussian basis.
+%Given the prior expectation that the matching Kernel will look like a delta function, 
+%this basis set will be smaller than the default ImagePsfMatchTask set (31 terms).
 
--- Develop tools to query the known star list, and associate them with DiaSources.
+%-- Decide between the two bases in the final SnapCombineTask Config.
 
--- Develop cuts on measurement features to distinguish cosmics from
-stellar cores in the Snap DiaSources.
+%-- Establish sufficient dimensions for the Psf--matching kernel, since again
+%the power is expected to be localized.
 
--- Establish the final metadata for the combined Exposure.  E.g. the
-combined Exposure will have an exposure time equivalent to the sum of
-the two input Snaps (i.e. this will {\it not} be an average image).  Establish
-the metadata to be summed (e.g. exposure time), averaged (e.g. TAI of exposure), 
-and assumed to be the same (e.g. Wcs).
+%-- Develop tools to distinguish cosmic rays from the most significant
+%contaminant, the cores of bright stars.  
+
+%-- Develop tools to query the known cosmic ray list (locations, shapes and amplitudes), 
+%and associate them with DiaSources.
+
+%-- Develop tools to query the known star list, and associate them with DiaSources.
+%
+%-- Develop cuts on measurement features to distinguish cosmics from
+%stellar cores in the Snap DiaSources.
+
+%-- Establish the final metadata for the combined Exposure.  E.g. the
+%combined Exposure will have an exposure time equivalent to the sum of
+%the two input Snaps (i.e. this will {\it not} be an average image). 
 
 {\bf CalibrateTask}\\
--- Determine an optimal background grid size; there are several of these in the config
-  and we must understand what each one does.
+-- Evaluate the size of the background grid for background
+determination and the configuration parameters.
+%. Determine an optimal background grid size; there are several of these in the config
+%  and we must understand what each one does.
 
--- Determine the aperture sizes for aperture corrections; the default is too small.
+-- Determine appropriate  aperture sizes for aperture corrections%; the default is too small.
 
 {\bf DeblendTask}\\
 -- Establish the deblending radius.
+%what is this?
 
 {\bf MeasurementTask}\\
--- Determine which galaxy shape parameters are to be measured.
+-- Specify the galaxy shape parameters that will be measured.
 
 \subsection{Metrics and Testing Tools}
 
--- Evaluate the cross--match the list of DiaSources  with the cosmic ray list, and
-with the known star list.  The measured features of these two samples
-will be compared against each other to find the most distinguishing
-characteristics.  We will calculate the efficiency and purity of this
-sample as metrics to optimize.
+-- CR detection, deblending and  will be evaluated by cross matching
+to known sources (variables and cosmic rays)  within the reference
+catalog or database.
+
+-- Debug tools to associate catalog sources (and measured attributes)
+with processed images will be implemented as required
+
+-- Evaluation of the snap combine will be undertaken using the
+statistics package and by comparing MSE, numbers of false detections
+etc in the snap difference image.
+
+%Evaluate the cross--match the list of DiaSources  with the cosmic ray list, and 
+%with the known star list.  The measured features of these two samples
+%will be compared against each other to find the most distinguishing
+%characteristics.  We will calculate the efficiency and purity of this
+%sample as metrics to optimize.
 
 %%%%%%%
 
