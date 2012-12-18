@@ -1319,15 +1319,15 @@ ProcessCcdTask                & 147 sec       & Ccd          & 11340           &
 ~~~~~~Calexp CDM              & 80 sec        & $\cdots$     & $\cdots$        &        &  \\
 ~~~~~~AstrometryTask          & 1 sec         & $\cdots$     & $\cdots$        &        &  \\
 MakeSkyMapTask                & 10 sec        & Skymap       & 1               &        &  \\
-MakeCoaddTempExpTask (no PSF match) & 30 sec  & Visit-Patch  & 12000           &  100   &  \\
-MakeCoaddTempExpTask          & 175 sec       & Visit-Patch  & 12000           &  583   &  \\
-AssembleCoaddTask             & 356 sec       & Patch        & 200             &  20    & Assuming 20 visits/patch \\   
-ProcessCoaddTask              & ?             & Patch        & 200             &  ???   &  \\
-ImageDifferenceTask           & ?             & Ccd          & 12000           &  ???   &  \\
-~~~~~~ImagePsfMatchTask       &               & $\cdots$     & $\cdots$        &        &  \\
-~~~~~~SourceDetectionTask     &               & $\cdots$     & $\cdots$        &        &  \\
-~~~~~~SourceMeasurementTask   &               & $\cdots$     & $\cdots$        &        &  \\
-~~~~~~SourceDeblendTask       &               & $\cdots$     & $\cdots$        &        &  \\
+MakeCoaddTempExpTask (no PSF match) & 260 sec & Visit-Patch  & 12000           &  870   &  \\
+MakeCoaddTempExpTask          & 1550 sec      & Visit-Patch  & 12000           &  5200  &  \\
+AssembleCoaddTask             & 360 sec       & Patch        & 200             &  20    & Assuming 20 visits/patch \\   
+ProcessCoaddTask              & 360 sec       & Patch        & 200             &  20   &  \\
+ImageDifferenceTask           & 260 sec       & Ccd          & 12000          &  870   &  \\
+%~~~~~~ImagePsfMatchTask       &               & $\cdots$     & $\cdots$        &        &  \\
+%~~~~~~SourceDetectionTask     &               & $\cdots$     & $\cdots$        &        &  \\
+%~~~~~~SourceMeasurementTask   &               & $\cdots$     & $\cdots$        &        &  \\
+%~~~~~~SourceDeblendTask       &               & $\cdots$     & $\cdots$        &        &  \\
 \hline
 Database Ingest               & 1 sec      & 10K Rows     & 9060     & 2.5     & Assuming 12x parallel  \\
 ~~~~~~Calexp                  & 1 sec      & 10K Rows     & 8000     & 2.2     &  \\
