@@ -6,6 +6,21 @@ processCcd:calibrate.run: CpuTime median=36.0; mean=35.5215517241; stdDev=3.8584
 processCcd:measurement.run: CpuTime median=21.0; mean=22.036036036; stdDev=7.33672476197; min=11; max=48; n=222
 processCcd:detection.makeSourceCatalog: CpuTime median=12.0; mean=13.0945945946; stdDev=3.93929928918; min=11; max=31; n=222
 
+# with fancy snapCombine the figures change to
+processCcd:isr.run: CpuTime median=59.54; mean=59.0188888889; stdDev=1.17303447372; min=57.16; max=60.51; n=9
+processCcd:isr:snapCombine.run: CpuTime median=36.0; mean=35.8811111111; stdDev=0.794543117415; min=34.65; max=36.98; n=9
+most of which is explained by adding snapCombine (59 - 36 = 23, whereas the older run claims 27)
+
+# using the small run and fancy snapCombine:
+processCcd.run: CpuTime median=145.0; mean=144.096666667; stdDev=4.84282286826; min=135.69; max=152.4; n=9
+processCcd:isr.run: CpuTime median=58.43; mean=59.8; stdDev=2.83262736303; min=57.13; max=65.47; n=9
+processCcd:isr:snapCombine.run: CpuTime median=35.47; mean=35.8166666667; stdDev=0.773304597167; min=34.94; max=37.53; n=9
+processCcd:calibrate.run: CpuTime median=40.77; mean=41.3588888889; stdDev=3.37001630212; min=37.37; max=46.82; n=9
+processCcd:measurement.run: CpuTime median=20.75; mean=21.7233333333; stdDev=3.92266632676; min=17.8; max=31.0; n=9
+processCcd:detection.makeSourceCatalog: CpuTime median=10.71; mean=10.8711111111; stdDev=0.295388423923; min=10.52; max=11.46; n=9
+
+processCcd:calibrate:astrometry.run: CpuTime median=1.185; mean=1.20333333333; stdDev=0.12635927614; min=0.95; max=1.45; n=18
+
 
 
 processCcd:calibrate:astrometry.astrometry: CpuTime median=1.0; mean=0.988986784141; stdDev=0.457307129179; min=0; max=2; n=454
@@ -116,3 +131,236 @@ processCcd:calibrate:repair.run: CpuTime median=1.0; mean=1.20704845815; stdDev=
 processCcd:calibrate:repair.run: UTime median=1.0; mean=1.27092511013; stdDev=0.444437503854; min=1; max=2; n=454
 processCcd:calibrate:repair.run: STime median=0.0; mean=0.0220264317181; stdDev=0.146769438317; min=0; max=1; n=454
 processCcd:calibrate:repair.run: MaxRss median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=454
+
+
+# run a small bit with heavy-duty snapCombine turned on (as we expect for Winter2013)
+# note that I kept getting errors about matching sources, despite using:
+# astrometry_net_data   imsim-2011-08-01-0 	current setup
+# so apparently the astrometry_net_data has changed?
+# so BE CAREFUL which timings you trust from this
+lsst6$ reportTaskTiming.py tmplsst --datasettype=processCcd_metadata \
+>     --id visit=865833781 raft=2,2 sensor=0,0^0,1^0,2^1,0^1,1^1,2^2,0^2,1^2,2
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/reportTaskTiming.py'
+: Config override file does not exist: '/lsst/DC3/stacks/gcc445-RH6/28nov2011/Linux64/obs_lsstSim/6.1.0.0+3/config/lsstSim/reportTaskTiming.py'
+: input=/nfs/lsst/home/rowen/code/pipe_tasks/tmplsst
+: calib=None
+: output=None
+CameraMapper: Loading registry registry from /nfs/lsst/home/rowen/code/pipe_tasks/tmplsst/_parent/registry.sqlite3
+processCcd:calibrate:astrometry.run: CpuTime median=0.4; mean=0.407777777778; stdDev=0.0537024265493; min=0.34; max=0.53; n=9
+processCcd:calibrate:astrometry.run: UserTime median=0.345948; mean=0.349502555556; stdDev=0.0346840573146; min=0.287957; max=0.389941; n=9
+processCcd:calibrate:astrometry.run: SystemTime median=0.048993; mean=0.0585466666667; stdDev=0.032501961175; min=0.016997; max=0.139979; n=9
+processCcd:calibrate:astrometry.run: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:astrometry.astrometry: CpuTime median=0.39; mean=0.4; stdDev=0.0533333333333; min=0.33; max=0.52; n=9
+processCcd:calibrate:astrometry.astrometry: UserTime median=0.337948; mean=0.341614777778; stdDev=0.034112110791; min=0.280958; max=0.380942; n=9
+processCcd:calibrate:astrometry.astrometry: SystemTime median=0.048993; mean=0.0584355555556; stdDev=0.0325736627494; min=0.016997; max=0.139979; n=9
+processCcd:calibrate:astrometry.astrometry: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:astrometry.distort: CpuTime median=0.00999999999999; mean=0.00777777777779; stdDev=0.00415739709642; min=0.0; max=0.0100000000001; n=9
+processCcd:calibrate:astrometry.distort: UserTime median=0.00699900000001; mean=0.00733222222222; stdDev=0.000471483186396; min=0.006998; max=0.00799899999998; n=9
+processCcd:calibrate:astrometry.distort: SystemTime median=0.0; mean=0.000111111111111; stdDev=0.000314269680527; min=0.0; max=0.001; n=9
+processCcd:calibrate:astrometry.distort: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:isr.run: CpuTime median=59.54; mean=59.0188888889; stdDev=1.17303447372; min=57.16; max=60.51; n=9
+processCcd:isr.run: UserTime median=52.894959; mean=52.9105121111; stdDev=0.726456186225; min=51.778129; max=54.07378; n=9
+processCcd:isr.run: SystemTime median=5.947096; mean=6.10462766667; stdDev=1.15285832162; min=3.849415; max=7.607843; n=9
+processCcd:isr.run: MaxResidentSetSize median=56628.0; mean=163908.888889; stdDev=346829.200015; min=0; max=1141156; n=9
+processCcd:calibrate:repair.run: CpuTime median=1.31; mean=1.30111111111; stdDev=0.0470093240029; min=1.2; max=1.35; n=9
+processCcd:calibrate:repair.run: UserTime median=1.304801; mean=1.28824866667; stdDev=0.0491319978945; min=1.174822; max=1.344796; n=9
+processCcd:calibrate:repair.run: SystemTime median=0.023996; mean=0.0155531111111; stdDev=0.0144207979163; min=0.0; max=0.037994; n=9
+processCcd:calibrate:repair.run: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:isr:snapCombine:detection.makeSourceCatalog: CpuTime median=8.92; mean=9.12555555556; stdDev=0.399391512487; min=8.52; max=9.77; n=9
+processCcd:isr:snapCombine:detection.makeSourceCatalog: UserTime median=8.145761; mean=8.15420466667; stdDev=0.0736308853871; min=8.068773; max=8.28874; n=9
+processCcd:isr:snapCombine:detection.makeSourceCatalog: SystemTime median=0.825875; mean=0.973518777778; stdDev=0.36588381651; min=0.370944; max=1.617754; n=9
+processCcd:isr:snapCombine:detection.makeSourceCatalog: MaxResidentSetSize median=0.0; mean=17740.0; stdDev=50176.297193; min=0; max=159660; n=9
+processCcd:isr:snapCombine:detection.detectFootprints: CpuTime median=8.92; mean=9.12333333333; stdDev=0.397240481321; min=8.52; max=9.77; n=9
+processCcd:isr:snapCombine:detection.detectFootprints: UserTime median=8.143761; mean=8.15198266667; stdDev=0.0738714716142; min=8.066774; max=8.286741; n=9
+processCcd:isr:snapCombine:detection.detectFootprints: SystemTime median=0.825875; mean=0.973518777778; stdDev=0.36588381651; min=0.370944; max=1.617754; n=9
+processCcd:isr:snapCombine:detection.detectFootprints: MaxResidentSetSize median=0.0; mean=17740.0; stdDev=50176.297193; min=0; max=159660; n=9
+processCcd:isr:snapCombine:measurement.measure: CpuTime median=2.18; mean=2.24222222222; stdDev=0.145050012661; min=2.1; max=2.51; n=9
+processCcd:isr:snapCombine:measurement.measure: UserTime median=2.175669; mean=2.21632966667; stdDev=0.143933399064; min=2.062686; max=2.475624; n=9
+processCcd:isr:snapCombine:measurement.measure: SystemTime median=0.034995; mean=0.0251074444444; stdDev=0.0187022110761; min=0.0; max=0.043993; n=9
+processCcd:isr:snapCombine:measurement.measure: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd.run: CpuTime median=77.42; mean=76.7677777778; stdDev=1.48665005804; min=74.45; max=79.03; n=9
+processCcd.run: UserTime median=69.854381; mean=69.9492551111; stdDev=0.825605481321; min=68.599571; max=71.322157; n=9
+processCcd.run: SystemTime median=6.619994; mean=6.81796355556; stdDev=1.47088921309; min=4.257353; max=9.386573; n=9
+processCcd.run: MaxResidentSetSize median=56628.0; mean=163909.777778; stdDev=346831.704603; min=0; max=1141164; n=9
+processCcd.process: CpuTime median=17.78; mean=17.7488888889; stdDev=0.44515776091; min=17.25; max=18.83; n=9
+processCcd.process: UserTime median=16.991417; mean=17.0381874444; stdDev=0.171214969607; min=16.814444; max=17.306369; n=9
+processCcd.process: SystemTime median=0.52592; mean=0.713335888889; stdDev=0.439922720109; min=0.32795; max=1.84072; n=9
+processCcd.process: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:isr:snapCombine.run: CpuTime median=36.0; mean=35.8811111111; stdDev=0.794543117415; min=34.65; max=36.98; n=9
+processCcd:isr:snapCombine.run: UserTime median=33.237947; mean=33.2150617778; stdDev=0.55567061943; min=32.522056; max=34.267791; n=9
+processCcd:isr:snapCombine.run: SystemTime median=2.675594; mean=2.665817; stdDev=0.688631806747; min=1.133828; max=3.478471; n=9
+processCcd:isr:snapCombine.run: MaxResidentSetSize median=56628.0; mean=81252.4444444; stdDev=115739.592848; min=0; max=397248; n=9
+processCcd:isr:snapCombine:repair.run: CpuTime median=1.34; mean=1.32777777778; stdDev=0.0463747483438; min=1.25; max=1.42; n=18
+processCcd:isr:snapCombine:repair.run: UserTime median=1.3202995; mean=1.31235616667; stdDev=0.0384435306279; min=1.24881; max=1.38079; n=18
+processCcd:isr:snapCombine:repair.run: SystemTime median=0.0229965; mean=0.0151088333333; stdDev=0.0142918566178; min=0.0; max=0.042993; n=18
+processCcd:isr:snapCombine:repair.run: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=18
+processCcd:calibrate.run: CpuTime median=17.77; mean=17.7477777778; stdDev=0.445091196093; min=17.25; max=18.83; n=9
+processCcd:calibrate.run: UserTime median=16.989418; mean=17.0360767778; stdDev=0.171312886875; min=16.812444; max=17.304369; n=9
+processCcd:calibrate.run: SystemTime median=0.52592; mean=0.713113666667; stdDev=0.439976421859; min=0.32695; max=1.84072; n=9
+processCcd:calibrate.run: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate.background: CpuTime median=3.7; mean=3.70222222222; stdDev=0.0318948890987; min=3.64; max=3.76; n=9
+processCcd:calibrate.background: UserTime median=3.628449; mean=3.63878011111; stdDev=0.0286663013482; min=3.604452; max=3.697438; n=9
+processCcd:calibrate.background: SystemTime median=0.078988; mean=0.0611017777778; stdDev=0.0272495702546; min=0.0; max=0.082987; n=9
+processCcd:calibrate.background: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:isr:snapCombine:diffim.run: CpuTime median=20.58; mean=20.3166666667; stdDev=0.577946556545; min=19.3; max=21.08; n=9
+processCcd:isr:snapCombine:diffim.run: UserTime median=19.27107; mean=19.2181895556; stdDev=0.436709633491; min=18.55018; max=20.100944; n=9
+processCcd:isr:snapCombine:diffim.run: SystemTime median=1.001848; mean=1.09738866667; stdDev=0.469556585991; min=0.339948; max=1.827722; n=9
+processCcd:isr:snapCombine:diffim.run: MaxResidentSetSize median=0.0; mean=15764.8888889; stdDev=44589.8393519; min=0; max=141884; n=9
+processCcd:isr:snapCombine:diffim._solve: CpuTime median=5.37; mean=5.23777777778; stdDev=0.389380641469; min=4.6; max=5.89; n=9
+processCcd:isr:snapCombine:diffim._solve: UserTime median=5.369184; mean=5.22798311111; stdDev=0.380983021355; min=4.602301; max=5.870108; n=9
+processCcd:isr:snapCombine:diffim._solve: SystemTime median=0.00499900000001; mean=0.013109; stdDev=0.0224637614492; min=0.000999; max=0.074989; n=9
+processCcd:isr:snapCombine:diffim._solve: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:initialMeasurement.measure: CpuTime median=2.9; mean=2.87; stdDev=0.117851130198; min=2.69; max=3.0; n=9
+processCcd:calibrate:initialMeasurement.measure: UserTime median=2.865565; mean=2.84156788889; stdDev=0.116097375203; min=2.660595; max=2.968549; n=9
+processCcd:calibrate:initialMeasurement.measure: SystemTime median=0.032995; mean=0.0319951111111; stdDev=0.00598070979519; min=0.022997; max=0.041994; n=9
+processCcd:calibrate:initialMeasurement.measure: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:detection.makeSourceCatalog: CpuTime median=9.34; mean=9.46444444444; stdDev=0.436045642644; min=9.13; max=10.64; n=9
+processCcd:calibrate:detection.makeSourceCatalog: UserTime median=8.911645; mean=8.91586688889; stdDev=0.0778953101761; min=8.808661; max=9.022629; n=9
+processCcd:calibrate:detection.makeSourceCatalog: SystemTime median=0.306953; mean=0.545917; stdDev=0.408938552127; min=0.265959; max=1.617754; n=9
+processCcd:calibrate:detection.makeSourceCatalog: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:detection.detectFootprints: CpuTime median=9.33; mean=9.46; stdDev=0.437645213996; min=9.13; max=10.64; n=9
+processCcd:calibrate:detection.detectFootprints: UserTime median=8.909645; mean=8.91420044444; stdDev=0.0780294535788; min=8.806662; max=9.021629; n=9
+processCcd:calibrate:detection.detectFootprints: SystemTime median=0.306953; mean=0.545917; stdDev=0.408938552127; min=0.265959; max=1.617754; n=9
+processCcd:calibrate:detection.detectFootprints: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+
+# small run with everything
+lsst6$ reportTaskTiming.py tmplsst --datasettype=processCcd_metadata \
+>     --id visit=865833781 raft=2,2 sensor=0,0^0,1^0,2^1,0^1,1^1,2^2,0^2,1^2,2
+: Config override file does not exist: '/nfs/lsst/home/rowen/code/obs_lsstSim/config/reportTaskTiming.py'
+: Config override file does not exist: '/nfs/lsst/home/rowen/code/obs_lsstSim/config/lsstSim/reportTaskTiming.py'
+: input=/nfs/lsst/home/rowen/code/pipe_tasks/tmplsst
+: calib=None
+: output=None
+CameraMapper: Loading registry registry from /nfs/lsst/home/rowen/code/pipe_tasks/tmplsst/_parent/registry.sqlite3
+processCcd:calibrate:astrometry.run: CpuTime median=1.185; mean=1.20333333333; stdDev=0.12635927614; min=0.95; max=1.45; n=18
+processCcd:calibrate:astrometry.run: UserTime median=1.157824; mean=1.13999333333; stdDev=0.0910936988459; min=0.938858; max=1.276806; n=18
+processCcd:calibrate:astrometry.run: SystemTime median=0.0259955; mean=0.0603238888889; stdDev=0.0655611415583; min=0.00399899999999; max=0.209968; n=18
+processCcd:calibrate:astrometry.run: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=18
+processCcd:calibrate:astrometry.astrometry: CpuTime median=1.16; mean=1.17555555556; stdDev=0.125265150879; min=0.92; max=1.42; n=18
+processCcd:calibrate:astrometry.astrometry: UserTime median=1.130328; mean=1.11488605556; stdDev=0.0902239001475; min=0.91686; max=1.25081; n=18
+processCcd:calibrate:astrometry.astrometry: SystemTime median=0.0259955; mean=0.0601017222222; stdDev=0.0655008774664; min=0.00399899999999; max=0.209968; n=18
+processCcd:calibrate:astrometry.astrometry: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=18
+processCcd:calibrate:astrometry.distort: CpuTime median=0.00999999999999; mean=0.00833333333333; stdDev=0.0037267799625; min=0.0; max=0.01; n=18
+processCcd:calibrate:astrometry.distort: UserTime median=0.00649899999996; mean=0.00622133333332; stdDev=0.00143573875682; min=0.00399899999991; max=0.00799900000015; n=18
+processCcd:calibrate:astrometry.distort: SystemTime median=0.0; mean=0.0; stdDev=0.0; min=0.0; max=0.0; n=18
+processCcd:calibrate:astrometry.distort: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=18
+processCcd:calibrate:astrometry.refitWcs: CpuTime median=0.02; mean=0.0188888888889; stdDev=0.00458122847291; min=0.00999999999999; max=0.03; n=18
+processCcd:calibrate:astrometry.refitWcs: UserTime median=0.0179969999999; mean=0.0175527777778; stdDev=0.000955626702775; min=0.015997; max=0.018997; n=18
+processCcd:calibrate:astrometry.refitWcs: SystemTime median=0.0; mean=0.000222166666667; stdDev=0.000916016633158; min=0.0; max=0.003999; n=18
+processCcd:calibrate:astrometry.refitWcs: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=18
+processCcd:calibrate:repair.run: CpuTime median=1.24; mean=1.23555555556; stdDev=0.0847363376219; min=1.08; max=1.35; n=18
+processCcd:calibrate:repair.run: UserTime median=1.174322; mean=1.207872; stdDev=0.0949355720973; min=1.068838; max=1.343796; n=18
+processCcd:calibrate:repair.run: SystemTime median=0.0239965; mean=0.0275513888889; stdDev=0.0434524047284; min=0.0; max=0.19597; n=18
+processCcd:calibrate:repair.run: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=18
+processCcd:measurement.applyApCorr: CpuTime median=0.24; mean=0.241111111111; stdDev=0.0152347880009; min=0.21; max=0.26; n=9
+processCcd:measurement.applyApCorr: UserTime median=0.242963; mean=0.241852111111; stdDev=0.014377155409; min=0.215967; max=0.259961; n=9
+processCcd:measurement.applyApCorr: SystemTime median=0.0; mean=0.0; stdDev=0.0; min=0.0; max=0.0; n=9
+processCcd:measurement.applyApCorr: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:measurement.run: CpuTime median=20.75; mean=21.7233333333; stdDev=3.92266632676; min=17.8; max=31.0; n=9
+processCcd:measurement.run: UserTime median=20.742847; mean=21.7022564444; stdDev=3.92772613075; min=17.7593; max=30.996287; n=9
+processCcd:measurement.run: SystemTime median=0.007999; mean=0.0195525555556; stdDev=0.0150760673925; min=0.004999; max=0.040993; n=9
+processCcd:measurement.run: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:measurement.measure: CpuTime median=17.73; mean=18.6922222222; stdDev=3.84619805863; min=15.09; max=27.91; n=9
+processCcd:measurement.measure: UserTime median=17.721306; mean=18.6731612222; stdDev=3.84787075811; min=15.045712; max=27.904757; n=9
+processCcd:measurement.measure: SystemTime median=0.006999; mean=0.018886; stdDev=0.0152687741122; min=0.004999; max=0.040993; n=9
+processCcd:measurement.measure: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:measurement.classify: CpuTime median=2.78; mean=2.78777777778; stdDev=0.159427989859; min=2.5; max=2.99; n=9
+processCcd:measurement.classify: UserTime median=2.777578; mean=2.78568766667; stdDev=0.162235707609; min=2.497621; max=2.990545; n=9
+processCcd:measurement.classify: SystemTime median=0.000999999999998; mean=0.000666555555556; stdDev=0.000471326051597; min=0.0; max=0.001; n=9
+processCcd:measurement.classify: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:isr.run: CpuTime median=58.43; mean=59.8; stdDev=2.83262736303; min=57.13; max=65.47; n=9
+processCcd:isr.run: UserTime median=53.490868; mean=53.9415773333; stdDev=1.29375558942; min=52.659995; max=57.09332; n=9
+processCcd:isr.run: SystemTime median=5.408177; mean=5.85733177778; stdDev=1.68970146248; min=3.917404; max=8.483711; n=9
+processCcd:isr.run: MaxResidentSetSize median=0.0; mean=129092.888889; stdDev=357982.739943; min=0; max=1141508; n=9
+processCcd:detection.makeSourceCatalog: CpuTime median=10.71; mean=10.8711111111; stdDev=0.295388423923; min=10.52; max=11.46; n=9
+processCcd:detection.makeSourceCatalog: UserTime median=10.407418; mean=10.3732007778; stdDev=0.100818672039; min=10.192451; max=10.551396; n=9
+processCcd:detection.makeSourceCatalog: SystemTime median=0.302954; mean=0.500035222222; stdDev=0.278294183033; min=0.229965; max=1.037842; n=9
+processCcd:detection.makeSourceCatalog: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:detection.detectFootprints: CpuTime median=10.71; mean=10.8677777778; stdDev=0.291577234966; min=10.52; max=11.45; n=9
+processCcd:detection.detectFootprints: UserTime median=10.401419; mean=10.3673127778; stdDev=0.100919831077; min=10.186451; max=10.546397; n=9
+processCcd:detection.detectFootprints: SystemTime median=0.302954; mean=0.499924111111; stdDev=0.278376228256; min=0.229965; max=1.037842; n=9
+processCcd:detection.detectFootprints: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:isr:snapCombine:detection.makeSourceCatalog: CpuTime median=9.1; mean=9.06666666667; stdDev=0.276807193227; min=8.55; max=9.45; n=9
+processCcd:isr:snapCombine:detection.makeSourceCatalog: UserTime median=8.187756; mean=8.20541944444; stdDev=0.0723844303196; min=8.124765; max=8.35173; n=9
+processCcd:isr:snapCombine:detection.makeSourceCatalog: SystemTime median=0.914861; mean=0.861758; stdDev=0.25591442509; min=0.305953; max=1.189819; n=9
+processCcd:isr:snapCombine:detection.makeSourceCatalog: MaxResidentSetSize median=0.0; mean=17688.8888889; stdDev=50031.73314; min=0; max=159200; n=9
+processCcd:isr:snapCombine:detection.detectFootprints: CpuTime median=9.09; mean=9.06333333333; stdDev=0.279006172771; min=8.54; max=9.45; n=9
+processCcd:isr:snapCombine:detection.detectFootprints: UserTime median=8.185756; mean=8.20341955556; stdDev=0.0723846549087; min=8.122765; max=8.349731; n=9
+processCcd:isr:snapCombine:detection.detectFootprints: SystemTime median=0.914861; mean=0.861758; stdDev=0.25591442509; min=0.305953; max=1.189819; n=9
+processCcd:isr:snapCombine:detection.detectFootprints: MaxResidentSetSize median=0.0; mean=17688.8888889; stdDev=50031.73314; min=0; max=159200; n=9
+processCcd:isr:snapCombine:measurement.measure: CpuTime median=2.22; mean=2.25777777778; stdDev=0.131383897016; min=2.13; max=2.5; n=9
+processCcd:isr:snapCombine:measurement.measure: UserTime median=2.155672; mean=2.21177477778; stdDev=0.137156056848; min=2.083683; max=2.464626; n=9
+processCcd:isr:snapCombine:measurement.measure: SystemTime median=0.039994; mean=0.0468817777778; stdDev=0.0175182721673; min=0.038994; max=0.095985; n=9
+processCcd:isr:snapCombine:measurement.measure: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd.run: CpuTime median=145.0; mean=144.096666667; stdDev=4.84282286826; min=135.69; max=152.4; n=9
+processCcd.run: UserTime median=136.607232; mean=135.970884556; stdDev=4.50485012593; min=127.068682; max=141.516487; n=9
+processCcd.run: SystemTime median=8.62269; mean=8.12576477778; stdDev=2.14257303516; min=5.470168; max=11.111311; n=9
+processCcd.run: MaxResidentSetSize median=0.0; mean=129093.777778; stdDev=357985.25382; min=0; max=1141516; n=9
+processCcd.process: CpuTime median=85.25; mean=84.2933333333; stdDev=3.85399359972; min=77.26; max=89.52; n=9
+processCcd.process: UserTime median=83.721272; mean=82.0285297778; stdDev=4.11693977874; min=74.250712; max=88.001622; n=9
+processCcd.process: SystemTime median=1.853718; mean=2.268433; stdDev=0.782002289234; min=1.503771; max=3.593454; n=9
+processCcd.process: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:measurement.measure: CpuTime median=3.09; mean=3.11888888889; stdDev=0.214602704987; min=2.9; max=3.66; n=9
+processCcd:calibrate:measurement.measure: UserTime median=3.056535; mean=3.01409733333; stdDev=0.110051140099; min=2.802574; max=3.130524; n=9
+processCcd:calibrate:measurement.measure: SystemTime median=0.045993; mean=0.106761777778; stdDev=0.148950096087; min=0.032995; max=0.522921; n=9
+processCcd:calibrate:measurement.measure: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:measurement.applyApCorr: CpuTime median=0.04; mean=0.0411111111111; stdDev=0.00314269680525; min=0.04; max=0.05; n=9
+processCcd:calibrate:measurement.applyApCorr: UserTime median=0.042993; mean=0.0417713333333; stdDev=0.00261486732193; min=0.0369939999998; max=0.045993; n=9
+processCcd:calibrate:measurement.applyApCorr: SystemTime median=0.0; mean=0.0; stdDev=0.0; min=0.0; max=0.0; n=9
+processCcd:calibrate:measurement.applyApCorr: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:isr:snapCombine.run: CpuTime median=35.47; mean=35.8166666667; stdDev=0.773304597167; min=34.94; max=37.53; n=9
+processCcd:isr:snapCombine.run: UserTime median=33.461913; mean=33.5096834444; stdDev=0.440029654344; min=32.933993; max=34.447764; n=9
+processCcd:isr:snapCombine.run: SystemTime median=2.299651; mean=2.30931588889; stdDev=0.489114612938; min=1.499772; max=3.084531; n=9
+processCcd:isr:snapCombine.run: MaxResidentSetSize median=0.0; mean=46437.3333333; stdDev=124272.692443; min=0; max=397608; n=9
+processCcd:isr:snapCombine:repair.run: CpuTime median=1.345; mean=1.33777777778; stdDev=0.0374989711793; min=1.28; max=1.4; n=18
+processCcd:isr:snapCombine:repair.run: UserTime median=1.3257985; mean=1.31030077778; stdDev=0.0386956993068; min=1.240811; max=1.371792; n=18
+processCcd:isr:snapCombine:repair.run: SystemTime median=0.0299955; mean=0.0289956111111; stdDev=0.0124168882671; min=0.000999; max=0.050993; n=18
+processCcd:isr:snapCombine:repair.run: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=18
+processCcd:calibrate:photocal.run: CpuTime median=0.56; mean=0.597777777778; stdDev=0.0549298093081; min=0.54; max=0.7; n=9
+processCcd:calibrate:photocal.run: UserTime median=0.564914; mean=0.591465666667; stdDev=0.0453071683462; min=0.539918; max=0.6559; n=9
+processCcd:calibrate:photocal.run: SystemTime median=0.000999; mean=0.005888; stdDev=0.015247204312; min=0.0; max=0.048993; n=9
+processCcd:calibrate:photocal.run: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:photocal.selectMatches: CpuTime median=0.02; mean=0.02; stdDev=7.6966352988e-14; min=0.02; max=0.0200000000002; n=9
+processCcd:calibrate:photocal.selectMatches: UserTime median=0.019997; mean=0.0198857777778; stdDev=0.00152325191453; min=0.0179969999999; max=0.022996; n=9
+processCcd:calibrate:photocal.selectMatches: SystemTime median=0.0; mean=0.0; stdDev=0.0; min=0.0; max=0.0; n=9
+processCcd:calibrate:photocal.selectMatches: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:photocal.extractMagArrays: CpuTime median=0.54; mean=0.565555555556; stdDev=0.057948465824; min=0.49; max=0.67; n=9
+processCcd:calibrate:photocal.extractMagArrays: UserTime median=0.538918; mean=0.559248333333; stdDev=0.0475157687089; min=0.491926; max=0.626905; n=9
+processCcd:calibrate:photocal.extractMagArrays: SystemTime median=0.0; mean=0.00566577777778; stdDev=0.0149718873951; min=0.0; max=0.047993; n=9
+processCcd:calibrate:photocal.extractMagArrays: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:measurePsf.run: CpuTime median=11.1; mean=11.3722222222; stdDev=2.83808533964; min=8.07; max=15.86; n=9
+processCcd:calibrate:measurePsf.run: UserTime median=11.081316; mean=11.3301665556; stdDev=2.82523399269; min=8.045777; max=15.845591; n=9
+processCcd:calibrate:measurePsf.run: SystemTime median=0.017997; mean=0.0424382222222; stdDev=0.0318947822336; min=0.013998; max=0.092986; n=9
+processCcd:calibrate:measurePsf.run: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate.run: CpuTime median=40.77; mean=41.3588888889; stdDev=3.37001630212; min=37.37; max=46.82; n=9
+processCcd:calibrate.run: UserTime median=40.092905; mean=40.1346764444; stdDev=3.20938150554; min=36.489453; max=44.770194; n=9
+processCcd:calibrate.run: SystemTime median=0.730889; mean=1.22659133333; stdDev=0.64426694708; min=0.620905; max=2.113679; n=9
+processCcd:calibrate.run: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate.computeApCorr: CpuTime median=1.29; mean=1.28888888889; stdDev=0.147229559566; min=1.03; max=1.59; n=9
+processCcd:calibrate.computeApCorr: UserTime median=1.293803; mean=1.28713777778; stdDev=0.143019629447; min=1.035843; max=1.583759; n=9
+processCcd:calibrate.computeApCorr: SystemTime median=0.0; mean=0.000888666666666; stdDev=0.00128592577978; min=0.0; max=0.003; n=9
+processCcd:calibrate.computeApCorr: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate.background: CpuTime median=3.72; mean=3.75611111111; stdDev=0.0850580774719; min=3.68; max=3.97; n=18
+processCcd:calibrate.background: UserTime median=3.6444455; mean=3.65372233333; stdDev=0.0410962192692; min=3.602453; max=3.755429; n=18
+processCcd:calibrate.background: SystemTime median=0.0814875; mean=0.103428777778; stdDev=0.0825263513495; min=0.003; max=0.354946; n=18
+processCcd:calibrate.background: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=18
+processCcd:isr:snapCombine:diffim.run: CpuTime median=20.15; mean=20.1888888889; stdDev=0.63724135397; min=19.4; max=21.57; n=9
+processCcd:isr:snapCombine:diffim.run: UserTime median=19.415048; mean=19.3186186667; stdDev=0.400912625357; min=18.699157; max=20.140938; n=9
+processCcd:isr:snapCombine:diffim.run: SystemTime median=0.727889; mean=0.866534888889; stdDev=0.399932270736; min=0.381942; max=1.426783; n=9
+processCcd:isr:snapCombine:diffim.run: MaxResidentSetSize median=0.0; mean=15799.5555556; stdDev=44687.8914923; min=0; max=142196; n=9
+processCcd:isr:snapCombine:diffim._solve: CpuTime median=5.39; mean=5.26333333333; stdDev=0.392371705855; min=4.64; max=5.97; n=9
+processCcd:isr:snapCombine:diffim._solve: UserTime median=5.387181; mean=5.249313; stdDev=0.381216207755; min=4.645294; max=5.947096; n=9
+processCcd:isr:snapCombine:diffim._solve: SystemTime median=0.007999; mean=0.0164423333333; stdDev=0.0252112304076; min=0.00200000000001; max=0.086987; n=9
+processCcd:isr:snapCombine:diffim._solve: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:initialMeasurement.measure: CpuTime median=2.88; mean=2.87888888889; stdDev=0.127753620905; min=2.7; max=3.13; n=9
+processCcd:calibrate:initialMeasurement.measure: UserTime median=2.848567; mean=2.84556733333; stdDev=0.124160302824; min=2.660596; max=3.040538; n=9
+processCcd:calibrate:initialMeasurement.measure: SystemTime median=0.031996; mean=0.033106; stdDev=0.0244114027045; min=0.000999999999998; max=0.089986; n=9
+processCcd:calibrate:initialMeasurement.measure: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:detection.makeSourceCatalog: CpuTime median=9.59; mean=9.66444444444; stdDev=0.48928771611; min=9.02; max=10.51; n=9
+processCcd:calibrate:detection.makeSourceCatalog: UserTime median=9.035626; mean=9.01229655556; stdDev=0.154443503597; min=8.769666; max=9.279589; n=9
+processCcd:calibrate:detection.makeSourceCatalog: SystemTime median=0.315952; mean=0.654233888889; stdDev=0.413562614658; min=0.256961; max=1.352794; n=9
+processCcd:calibrate:detection.makeSourceCatalog: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
+processCcd:calibrate:detection.detectFootprints: CpuTime median=9.59; mean=9.66444444444; stdDev=0.48928771611; min=9.02; max=10.51; n=9
+processCcd:calibrate:detection.detectFootprints: UserTime median=9.034626; mean=9.01029688889; stdDev=0.154947980658; min=8.766668; max=9.278589; n=9
+processCcd:calibrate:detection.detectFootprints: SystemTime median=0.315952; mean=0.654233888889; stdDev=0.413562614658; min=0.256961; max=1.352794; n=9
+processCcd:calibrate:detection.detectFootprints: MaxResidentSetSize median=0.0; mean=0.0; stdDev=0.0; min=0; max=0; n=9
