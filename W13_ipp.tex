@@ -77,8 +77,9 @@ template; and in the subtraction of this template from individual
 science Exposures.
 
 The input data will be subsets of the simulated LSST images (ImSim);
-stretch goals include application of the algorithms to SDSS Stripe82
-data (S82).  The processing steps for the ImSim data include:
+%stretch goals include application of the algorithms to SDSS Stripe82
+%data (S82).  
+The processing steps for the ImSim data include:
 application of the Isr pipeline; combining the two Snaps in a Visit
 into a single Exposure; calibration, detection, and measurement on the
 Exposure; stacking of multiple Exposures into a Psf--matched template
@@ -118,7 +119,8 @@ including estimates of compute time and required development tasks.
 
 Three sets of simulated data are available for use in development of
 image differencing: 5yr, Wide, and Deep. These are described in detail
-at: \\ {\tt http://dev.lsstcorp.org/trac/wiki/ImSim/Summer2012Plan}.
+at:  {\tt http://dev.lsstcorp.org/trac/wiki/ImSim/Summer2012Plan}.
+
 Development of the LSST algorithms for Winter 2013 (W13) will focus on
 subsets of the 5yr data, which comprise 2369 visits (full focal plane)
 of 5 adjacent fields observed over a 5-year period in the full suite
@@ -214,8 +216,8 @@ Color Focal Plane   & focal plane  &  $g$ & 20 & $<$1.15 &$<$30 days \\
 Time Raft              & central raft  & $i$  & 20 & $<$1.15 &$>$3 years \\
 Time Focal Plane   & focal plane  &  $i$ & 20 & $<$1.15 &$>$3 years \\
 \hline 
-DCR Raft              & central raft  & $g$  & 20 & $>$1.3 &$<$30 days \\
-DCR Focal Plane   & focal plane  & $g$  & 20 & $>$1.3 &$<$30 days
+DCR Raft              & central raft  & $g$  & 10 & $>$1.3 &$<$30 days \\
+DCR Focal Plane   & focal plane  & $g$  & 10 & $>$1.3 &$<$30 days
 \end{tabular}
 \end{center}
 \end{table}
@@ -233,8 +235,9 @@ increments of 5 deg from 0 - 90 deg (18 master flats) will bring this
 below the nominal 1\% error.
 
 
-{\bf Reference Catalogs}\\
-Reference catalogs for entire W13 5yr survey exist for stellar sources
+{\bf Reference Catalogs}
+
+Reference catalogs for the entire W13 5yr survey exist for stellar sources
 and will be generated for galaxy sources. The attributes of the
 reference catalog will be extended (from S12) to include:
 
@@ -290,16 +293,17 @@ will be staged at JHU and then transferred to NCSA.
 %\clearpage 
 \section{CreateCalibrationProductsTask} 
 This task takes individual calibration frames and combines them into
-high signal-to-noise (S/N) master frames.  The masterbias, masterdark,
-and masterflat will be applied to the input calibration data. This task is not 
-camera specific and will be overridden by camera specific
-configs (and potentially using the config to retarget subtasks) in the
-camera obs package.  The general flow of data will be to process the
-individual frames with the appropriate instrument signature removal
-(ISR) steps for the product and camera.  Normalization of the flats is
-applied relative to the full focal plane. Most of the components of
-this task have been implemented using a combination of ImSim specific
-code and code written by Paul P. for Subaru.
+high signal-to-noise (S/N) master frames.  
+%The masterbias, masterdark,
+%and masterflat will be applied to the input calibration data. 
+This task is camera agnostic and will be overridden by camera specific
+configs in the camera obs package.  The general flow of data will be
+to process the individual frames with the appropriate instrument
+signature removal (ISR) steps for the product and camera.
+Normalization of the flats is applied relative to the full focal
+plane. Most of the components of this task have been implemented using
+a combination of ImSim specific code and code written by Paul P. for
+Subaru.
 
 \subsection{Input/Outputs}
 Inputs are: A set of raw calibration frames.
@@ -319,12 +323,12 @@ The individual calibration frames are combined into a single high S/N master fra
 
 \subsection{Evaluation and Development}
 
--- Design review to address implementation issues.
+-- Design review to address implementation details.
 
 -- Implementation of process, scale and combine as pipeline tasks.
 
 -- Evaluation of the required sampling of the angular dependent flat
-fields in terms of the required photometric accuracy.
+fields in terms of photometric accuracy.
 
 
 %%%%%%%
@@ -346,7 +350,7 @@ required when turning any one off to determine the effects on downstream process
 \subsection{Input/Outputs}
 Inputs are:
 
--- Two raw science frames (as Snaps)
+-- Two raw science frames (as snaps)
 
 -- Astrometry.net index files for photometric and astrometric calibration
 
@@ -359,9 +363,9 @@ Outputs are:
 
 -- Sources for ingest
 
--- Calexp for input to {\tt ip\_diffim}
+-- Calexp for input to {\tt ip\_diffim} and {\tt makeCoaddTempExp}
 
--- Background to add to Calexp for {\tt ip\_diffim}
+-- Background to add to Calexp for {\tt ip\_diffim} and {\tt makeCoaddTempExp}
 
 -- Psf for Psf matching
 
@@ -430,22 +434,22 @@ parameters can be turned on and off).
 
 {\bf SnapCombineTask}\\
 -- Evaluate the sensitivity of a simple add/subtract approach for
-snapCombine as a function of variation in per visit offsets and
+snapCombine as a function of variation in per snap offsets and
 variation in PSF. 
 %Current simulations have a distribution of offsets
 %with $>$70\% less than 0.1 pixels but with a 1\% tail extending to 0.6
 %pixels.
 
--- Based on the evaluation of the sensitivity: implement Psf-matched
-image differencing.
+-- Based on the evaluation of the sensitivity to snap offsets:
+implement Psf-matched image differencing.
 
 -- Evaluate the appropriate basis functions for psf-matching
 (including sum--of--Gaussian basis sets and delta--function kernels),
 the spatial order for the interpolation of the kernels,  the
 number of bases, and the kernel dimensions.
 
--- Develop tools to distinguish cosmic rays from the most significant
-Snap DiaSource contaminant, the cores of bright stars.  
+%-- Develop tools to distinguish cosmic rays from the most significant
+%Snap DiaSource contaminant, the cores of bright stars.  
 
 -- Establish the metadata to be summed (e.g. exposure time), averaged
 (e.g. TAI of exposure), and assumed to be the same (e.g. Wcs).
@@ -491,8 +495,8 @@ Snap DiaSource contaminant, the cores of bright stars.
 %the two input Snaps (i.e. this will {\it not} be an average image). 
 
 {\bf CalibrateTask}\\
--- Evaluate the size of the background grid for background
-determination and the configuration parameters.
+-- Evaluate the size of the grid and the configuration parameters for background
+determination.
 %. Determine an optimal background grid size; there are several of these in the config
 %  and we must understand what each one does.
 
@@ -535,15 +539,15 @@ with processed images will be implemented as required
 %\clearpage 
 \section{MakeSkyMapTask} 
 
-Creates a "sky map": a sky pixelization for Coadds consisting of a
-collection of overlapping "tracts".  Each tract is, essentially, a
+Creates a ``sky map": a sky pixelization for Coadds consisting of a
+collection of overlapping ``tracts".  Each tract is, essentially, a
 very large exposure with its own WCS.  Tracts are subdivided into
-rectangular overlapping subregions called "patches".
+rectangular overlapping subregions called ``patches".
 
 The sky map we plan to use is DodecaSkyMap. It has 12 tracts arranged
 as the faces of a dodecahedron.  An alternative if we decide we want
-more smaller tracts is HealpixSkyMap which arranges tracts as pixels
-in a HEALPix arrangement.
+smaller tracts is HealpixSkyMap which arranges tracts as pixels in a
+HEALPix arrangement.
 
 \subsection{Input/Outputs}
  Inputs are:
@@ -554,12 +558,12 @@ Outputs are:
 
 -- A sky map in the output repository.
 
--- A repository may have two sky maps: one for "deep" Coadds and one for "goodSeeing" Coadds.
+-- A repository may have two sky maps: one for ``deep" Coadds and one for ``goodSeeing" Coadds.
 
 \subsection{Evaluation and Development}
 
 -- Evaluate if the distortions at the edge of tracts for DodecaSkyMap
-impacts image differencing (e.g.\ due to variations in pixel size or
+impact image differencing (e.g.\ due to variations in pixel size or
 requirements on the WCS) by modifying the tract boundaries to
 intersect with the ImSim data. 
 
@@ -570,9 +574,11 @@ map definition for W13.
 self-contained other than needing cfitsio).
 
 -- SkyMap unpersistence has been a bit troublesome due to pickling {\it pex\_config} fields.
-When {\it pex\_config} changes sometimes this breaks SkyMap unpersistence. We must fix this eventually.
-It's not a high priority, but we could try to fix it in time
-for late Winter2013 production.
+When {\it pex\_config} changes sometimes this breaks SkyMap
+unpersistence. 
+%We must fix this eventually.
+%It's not a high priority, but we could try to fix it in time
+%for late Winter2013 production.
 
 %DodecaSkyMap has large tracts which have significant distortion at
 %the edges.  We don't believe this will be an issue for image
@@ -598,13 +604,13 @@ information about a sky map and displays a 3d graph of it.
 \section{MakeCoaddTempExpTask} 
 
 Suitable science images for coaddition are selected based on Psf FWHM,
-sky level, and photometric zeropoint.  These images are then
-Psf--matched to a model Psf and warped to the WCS of the desired Coadd
-patch to produce a coadd temp exposure ({\tt coaddTempExp}).  The
-model Psf is currently a circular double Gaussian function, with
-variable {\tt sigma1} reflecting the desired FWHM of the Coadd.  This
-will be chosen from the distribution of FWHM of the input data, third
-quartile for depth and second quartile for good seeing.
+sky level, and photometric zeropoint.  These images are Psf--matched
+to a model Psf and warped to the WCS of the desired Coadd patch to
+produce a coadd temp exposure ({\tt coaddTempExp}).  The model Psf is
+currently a circular double Gaussian function, with variable {\tt
+  sigma1} reflecting the desired FWHM of the Coadd.  This will be
+chosen from the distribution of FWHM of the input data; third quartile
+for depth and second quartile for good seeing.
 
 All Ccds from a visit that overlap a particular patch are combined
 into one coadd temp exposure, creating one {\tt coaddTempExp} per
@@ -642,7 +648,7 @@ querying the Science\_Ccd\_Exposure table.
 \subsection{ScaleZeroPointTask} 
 
 This subTask photometrically calibrates each {\tt coaddTempExp} to a
-common zero point.  The multiplicative scale factor applied to the {\tt
+common zero point.  The multiplicative scale factors applied to the {\tt
   coaddTempExp} will vary smoothly across the patch. A two--dimensional
 model will be implemented in W13.  Zeropoints are 
 calculated in {\tt processCcd} and stored in the
@@ -752,7 +758,7 @@ This trade--off will be evaluated in detail in W13 development.
 -- Evaluate ``how much'' deconvolution the code can handle, both in
 terms of the fraction of images that were deconvolved, and the degree
 to which each of the images is deconvolved, using the measured depth,
-variance, and Psf in the Coadd (after AssembleCoaddTask).
+variance, number of false positives, and Psf in the Coadd (after AssembleCoaddTask).
 
 -- Establish the quartiles of the FWHM distribution to use for setting
 the Coadd Psf, and for including in the Coadd.
@@ -791,7 +797,7 @@ RMS of the astrometric fit by a factor of two.
 -- Develop tools to measure the Psf of the {\tt coaddTempExp}.
 
 -- Establish the stability of the model--to--model Psf--matching
-kernel as a function of Psf dimension and Kernel dimension by tracking
+kernel as a function of Psf size and Kernel size by tracking
 the condition number of the solution.
 
 -- Evaluate the image quality metric developed for SelectImagesTask.
@@ -865,30 +871,29 @@ input {\tt coaddTempExp} are the same size, have been warped and have
 been flux-scaled.
 
 The task subtracts the exposure from the reference exposure, and then
-generates an afwMath.Background object of this difference image. It
+generates an {\tt afwMath.Background} object of this difference image. It
 assumes (but does not require or check) that the mask plane already
-has detections set; these pixels are ignored.  The 'background' of the
+has detections set; these pixels are ignored.  The ``background'' of the
 difference image is a collection of grid points that represent the
 mean or median difference between images.  These values are smoothed
-by spline interpolation (by the Background class), or by polynomial
-interpolation by the Approximate class, to yield the background
+by spline interpolation (by the {\tt Background} class), or by polynomial
+interpolation by the {\tt Approximate} class, to yield the background
 matching model.
 
-Inputs are: 
-
--- A list of dataRefIds pointing to {\tt coaddTempExps} and an
-optional dataRefId to the reference exposure.
-
-Outputs are:  
-
--- backgroundModel: an afwMath.Approximate or an afwMath.Background (or {\tt None} if fit failed).
-
--- fitRMS: RMS of the fit, sqrt(mean(residuals**2)).
-
--- matchedMSE: the MSE of the reference and matched images, mean((refImage - matchedSciImage)**2); 
-   this value should be comparable to the mean variance of the difference image.
-
--- diffImVar: the mean variance of the difference image.
+%Inputs are: 
+%
+%-- A list of dataRefIds pointing to {\tt coaddTempExps} and an
+%optional dataRefId to the reference exposure.
+%
+%Outputs are:  
+%
+%-- backgroundModel: an afwMath.Approximate or an afwMath.Background (or {\tt None} if fit failed).
+%%-- fitRMS: RMS of the fit, sqrt(mean(residuals**2)).
+%
+%-- matchedMSE: the MSE of the reference and matched images, mean((refImage - matchedSciImage)**2); 
+%  this value should be comparable to the mean variance of the difference image.
+%
+%-- diffImVar: the mean variance of the difference image.
 
 \subsection{Evaluation and Development}
 
@@ -948,7 +953,7 @@ understand the effects of DCR.
 %\clearpage 
 \section{ProcessCoaddTask} 
 This task runs calibration, detection and measurement on Coadds to
-generate the data products necessary for QA.  
+generate the data products necessary for QA and forced photometry.  
 %With the outputs of the
 %ProcessCoaddTask we will answer questions including:
 
@@ -1011,13 +1016,12 @@ WCS but we do want to measure it.
 
 The ImageDifferenceTask subtracts a template image that is warped and
 Psf--matched to an input science image, from that science image.  The
-image difference (or difference image) contains only those objects
-that have varied in position or brightness w.r.t. the template.
-Detection and measurement will be run on the difference image to
-characterize the residuals, both at positive and negative polarity,
-and persisted as DiaSources.  This is implemented via a series of
-subTasks: ImagePsfMatchTask, SourceDetectionTask, SourceDeblendTask,
-SourceMeasurementTask.
+difference image contains only those objects that have varied in
+position or brightness w.r.t. the template.  Detection and measurement
+will be run on the difference image to characterize the residuals,
+both at positive and negative polarity, and persisted as DiaSources.
+This is implemented via a series of subTasks: ImagePsfMatchTask,
+SourceDetectionTask, SourceDeblendTask, SourceMeasurementTask.
 
 In detail, the bounding box of a given input {\tt calexp} will be used
 to query the Coadd database.  The multiple SkyMap patches that overlap
@@ -1030,7 +1034,7 @@ The Task selects the objects to be used to Psf match the {\tt calexp}
 and template.  The code is currently configured to use a
 starSelectorRegistry ``second moment'' star selector; the type of
 selector is configurable.  Selection is run using detections on the
-template image, since this is likely to have higher S/N,
+template image, since this has higher S/N,
 and no astrophysical transients.  Objects with Mask bits in either
 image (set in the Config, currently ``EDGE'' and ``SAT'') are removed
 from the returned Source catalog.
@@ -1052,7 +1056,7 @@ model of these coefficients using a Chebyshev polynomial of order $N$.
 %quality of the Psf--match: using the original coefficients $a_i$; and
 %using the interpolated coefficients $a{'}_i$ that are derived from the
 %spatial model at $x,y$.  
-The metrics will be derived from the mean and RMS values of: the diffim
+The metrics will be derived from the mean and RMS values of the diffim
 residuals normalized by the square root of the variance.  We will use
 the residuals of a control sample of objects that are selected by the
 object selector, but not used in the actual kernel fit, to determine
@@ -1066,11 +1070,13 @@ configured to find sources of both positive and negative polarity.
 SourceMeasurementTask will be performed on the difference image source
 catalog, using the aperture correction from the science image.  We run
 a DipoleChecker to search for and flag dipoles.  The results will be
-persisted as DiaSources.  We require a new subTask that associates
-these DiaSources with the reference catalog {\it and} the {\tt calexp}
-source catalog.  DiaSources will be written to the database, along
-with reference catalog and Source matches.  The Source match table is
-a new database requirement.
+persisted as DiaSources.  
+
+We require a new subTask that associates these DiaSources with the
+reference catalog {\it and} the {\tt calexp} source catalog.
+DiaSources will be written to the database, along with reference
+catalog and Source matches.  The Source match table is a new database
+requirement.
 
 \subsection{Input/Outputs}
 
@@ -1134,7 +1140,7 @@ per--Exposure based on the number of Sources.  Do this for both
 Psf--matching and background--matching ({\it not} the same as
 BackgroundMatchingTask) models.
 
--- Evaluate RHL's option to pre--convolve.
+-- Evaluate option to pre--convolve.
 
 -- Determine the dipole signatures of high proper motion objects in
 the image differences, and sufficient measurements to distinguish
@@ -1164,11 +1170,11 @@ latter also requires a new table in the database.
 
 %-- Debug ingest of the DiaSources into MySQL.
 
--- Determine if a per--pixel variance, or a single variance for the entire
-image, results in better subtracted images.
+%-- Determine if a per--pixel variance, or a single variance for the entire
+%image, results in better subtracted images.
 
 -- Determine if deconvolution of the template, or convolution of the {\tt calexp},
-yields a cleaner detection set.
+yields a cleaner detection set and its impact on variance measures
 
 -- Develop Gaussian Processes based interpolation and
 evaluate against polynomial interpolation
@@ -1207,11 +1213,13 @@ the visualization of the inputs and outputs to ImageDifferenceTask.
 %\clearpage 
 \section{Database Ingestion} 
 This step is currently a set of by hand operations.  
-There will be a SourceIngestionTask for W13.  This is only one aspect of the
-database ingestion, however.  The steps for the different phases of ingestion will be:\\
+%There will be a SourceIngestionTask for W13.  This is only one aspect of the
+%database ingestion, however.  
+The steps for the different phases of ingestion will be:\\
+
 {\bf Registry Creation:}
 
--- Run genInputRegistry.py (possible in parallel)
+-- Run genInputRegistry.py (possibly in parallel)
 
 -- Merge input registries by hand
 
@@ -1237,11 +1245,11 @@ database ingestion, however.  The steps for the different phases of ingestion wi
 
 \subsection{Evaluation and Development}
 -- genInputRegistry.py takes ~10 min per visit to run.  With large
-amounts of data (10E3 visits), this is intractable.  Evaluate the
+amounts of data (10$^3}$ visits), this is intractable.  Evaluate the
 feasibility of unifying parallel input registry generation.
 
 -- Each of the above needs to be taskified and made so that it can be
-parallelized.  A must if data volumes exceed 10E8 rows (Sources).
+parallelized.  A must if data volumes exceed 10$^{8}$ rows (Sources).
 
 -- After parallel ingest, the tables need to be merged and indexed
 which can take a long time.  We need to identify the optimal recipe
@@ -1278,13 +1286,14 @@ SnapCombine.
 -- Adopting  warpable Psfs on the critical path during
 development is a risk.
 
--- Addressing the quality of model--to--model Psf--matching (i.e. does
+-- Address the quality of model--to--model Psf--matching (i.e. does
 the Psf in a {\tt coaddTempExp} match the Coadd model).
  
 -- Ingestion into the database, and extraction of the data from the
 database.  Ingest took approximately as long as processing in early
-production, and it required multiple weeks of honing database queries
-to get summary statistics on photometry.
+production.
+%, and it required multiple weeks of honing database queries
+%to get summary statistics on photometry.
 
 %%%%%%%
 
