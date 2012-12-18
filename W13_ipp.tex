@@ -665,15 +665,15 @@ multiplicative scale factor across the patch.
 \subsection{WarpAndPsfMatchTask subTask} 
 
 This subTask Psf--matches the input {\tt calexp} Psf to that desired
-for the Coadd.  
-%%% USING WHAT ALGORITHM
+for the Coadd using model--to--model matching.
+%
 It astrometrically warps the Psf--matched image to the astrometric
 footprint of the Coadd.  The {\tt calexp's} {\it model} Psf is read
 through the butler, and compared to the idealized Psf that we wish to
 realize for the Coadd.  Each Psf is realized in a grid of $x,y$
-%%% HOW BIG A GRID
-positions to account for spatial variation of the Psfs.  The model and
-idealized Psfs are images in KernelCandidate, with a set of KernelCandidates input to a
+%
+positions, based on the SpatialCellSet size, to account for spatial variation of the Psfs.  The model and
+idealized Psfs are images in KernelCandidate, and a set of KernelCandidates is input to the
 SpatialCellSet. Task functionality is the same as ImagePsfMatchTask with
 %Because the concept of ``variance'' is ill--defined when comparing
 %model--to--model, all 
